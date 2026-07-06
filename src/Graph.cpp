@@ -1,12 +1,9 @@
 #include "Graph.hpp"
 #include <iostream>
 #include <vector>
-<<<<<<< HEAD
 #include <queue>
-=======
 #include <unordered_map>
 #include <cmath>
->>>>>>> 74d8d3af55862571980c1029ad4696f5d15f7134
 
 using namespace std;
 
@@ -110,7 +107,6 @@ vector<string> Graph::correct(const string &s)
     return correct_words;
 }
 
-<<<<<<< HEAD
 vector<int> Graph::findShortest(int start) {
     vector<int> dist(1e6, INT_MAX);
     dist[start] = 0;
@@ -129,18 +125,11 @@ vector<int> Graph::findShortest(int start) {
 }
 
 void loadFromFile(string &filename)
-=======
-void Graph::loadFromFile(string &filename)
->>>>>>> 74d8d3af55862571980c1029ad4696f5d15f7134
 {
     ifstream file(filename);
 
     int V;
     file >> V;
-<<<<<<< HEAD
-}
-
-=======
     m_words.resize(V);
     m_graph.resize(V);
     for (size_t i = 0; i < V; i++)
@@ -157,4 +146,3 @@ void Graph::loadFromFile(string &filename)
         m_graph[a].push_back({b, w});
     }
 }
->>>>>>> 74d8d3af55862571980c1029ad4696f5d15f7134
