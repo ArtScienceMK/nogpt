@@ -4,6 +4,7 @@
 #include <queue>
 #include <unordered_map>
 #include <cmath>
+#include <algorithm>
 
 using namespace std;
 
@@ -109,6 +110,7 @@ vector<string> Graph::correct(const string &s)
 
 vector<int> Graph::findShortest(int start) {
     vector<int> dist(1e6, INT_MAX);
+    vector<int> pred(1e6, -1);
     dist[start] = 0;
     queue<int> q;
     q.push(start);
@@ -118,7 +120,18 @@ vector<int> Graph::findShortest(int start) {
         for (auto [u, trash] : m_graph[v]) {
             if (dist[u] > dist[v] + 1) {
                 dist[u] = dist[v] + 1;
+                pred[u] = v;
                 q.push(u);
+                if ((int)m_words[u].size() == 1 && !isalpha(m_words[u][0]) && !isdigit(m_words[u][0]) && dist[u] >= 2) {
+                    vector<int> path;
+                    int curv = v;
+                    while (curv != -1) {
+                        path.push_back(curv);
+                        curv = pred[curv];
+                    }
+                    reverse(path.begin(), path.end());
+                    return path;
+                }
             }
         }
     }
