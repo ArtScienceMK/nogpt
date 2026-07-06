@@ -45,26 +45,33 @@ double Graph::getWeight(int from, int to) const
     return 0.0;
 }
 
-string Graph::pathToSentens(vector<int> &path) const {
+string Graph::pathToSentens(vector<int> &path) const
+{
     /*  0 - word
         1 - dight
         2 - symbol
     */
     int last = 0;
     string ans = "";
-    for (auto it : path) {
+    for (auto it : path)
+    {
         auto word = m_words[it];
-        if (isalpha(word[0])) {
+        if (isalpha(word[0]))
+        {
             ans += " " + word;
             last = 0;
         }
-        else if (isdigit(word[0])) {
-            if (last != 1) ans += " ";
+        else if (isdigit(word[0]))
+        {
+            if (last != 1)
+                ans += " ";
             ans += word;
             last = 1;
         }
-        else {
-            if (last != 0) ans += " ";
+        else
+        {
+            if (last != 0)
+                ans += " ";
             ans += word;
             last = 2;
         }
@@ -135,7 +142,8 @@ vector<string> Graph::correct(const string &s)
     return correct_words;
 }
 
-vector<int> Graph::findShortestBFS(int start) {
+vector<int> Graph::findShortestBFS(int start)
+{
     vector<int> dist(1e6, INT_MAX);
     vector<int> pred(1e6, -1);
     dist[start] = 0;
@@ -190,4 +198,7 @@ void Graph::loadFromFile(string &filename)
         file >> a >> b >> w;
         m_graph[a].push_back({b, w});
     }
+}
+
+string Graph::answerTo(string &sentens) {
 }
