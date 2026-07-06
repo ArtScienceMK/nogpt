@@ -1,14 +1,58 @@
 #include "Graph.hpp"
 #include <iostream>
 #include <vector>
+<<<<<<< HEAD
 #include <queue>
+=======
+#include <unordered_map>
+#include <cmath>
+>>>>>>> 74d8d3af55862571980c1029ad4696f5d15f7134
 
 using namespace std;
 
-Graph::Graph() : m_graph(0),
-                 m_words(0){}
+double Graph::getPathScore(vector<int> &path) const
+{
+    int L = path.size();
+    double summP = 0.0;
+    unordered_map<string, int> m;
 
-vector<string> Graph::correct(const string & s) {
+    ++m[m_words[path[0]]];
+    for (size_t i = 1; i < L; i++)
+    {
+        summP += getWeight(path[i - 1], path[i]);
+        ++m[m_words[path[i]]];
+    }
+
+    double P = summP / L;
+    int summCount = 0;
+
+    for (auto it : m)
+    {
+        summCount += it.second;
+    }
+
+    double U = (double) summCount / (double) L;
+
+    return exp(-0.05 * abs(L - 15)) * P * exp(-0.5 * (U - 1));
+}
+
+double Graph::getWeight(int from, int to) const
+{
+    for (auto it : m_graph[from])
+    {
+        if (it.first == to)
+            return it.second;
+    }
+    return 0.0;
+}
+
+Graph::Graph() : m_graph(0),
+                 m_words(0)
+{
+}
+
+vector<string> Graph::correct(const string &s)
+{
     vector<string> words;
     string cur = "";
     for (char c : s)
@@ -66,6 +110,7 @@ vector<string> Graph::correct(const string & s) {
     return correct_words;
 }
 
+<<<<<<< HEAD
 vector<int> Graph::findShortest(int start) {
     vector<int> dist(1e6, INT_MAX);
     dist[start] = 0;
@@ -84,10 +129,32 @@ vector<int> Graph::findShortest(int start) {
 }
 
 void loadFromFile(string &filename)
+=======
+void Graph::loadFromFile(string &filename)
+>>>>>>> 74d8d3af55862571980c1029ad4696f5d15f7134
 {
     ifstream file(filename);
 
     int V;
     file >> V;
+<<<<<<< HEAD
 }
 
+=======
+    m_words.resize(V);
+    m_graph.resize(V);
+    for (size_t i = 0; i < V; i++)
+    {
+        file >> m_words[i];
+    }
+    int R;
+    file >> R;
+    for (size_t i = 0; i < R; i++)
+    {
+        int a, b;
+        float w;
+        file >> a >> b >> w;
+        m_graph[a].push_back({b, w});
+    }
+}
+>>>>>>> 74d8d3af55862571980c1029ad4696f5d15f7134
