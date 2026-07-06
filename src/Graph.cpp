@@ -1,6 +1,7 @@
 #include "Graph.hpp"
 #include <iostream>
 #include <vector>
+#include <queue>
 
 using namespace std;
 
@@ -65,6 +66,23 @@ vector<string> Graph::correct(const string & s) {
     return correct_words;
 }
 
+vector<int> Graph::findShortest(int start) {
+    vector<int> dist(1e6, INT_MAX);
+    dist[start] = 0;
+    queue<int> q;
+    q.push(start);
+    while (!q.empty()) {
+        int v = q.front();
+        q.pop();
+        for (auto [u, trash] : m_graph[v]) {
+            if (dist[u] > dist[v] + 1) {
+                dist[u] = dist[v] + 1;
+                q.push(u);
+            }
+        }
+    }
+}
+
 void loadFromFile(string &filename)
 {
     ifstream file(filename);
@@ -72,3 +90,4 @@ void loadFromFile(string &filename)
     int V;
     file >> V;
 }
+

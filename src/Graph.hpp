@@ -9,6 +9,7 @@ class Graph
     vector<vector<pair<int, float>>> m_graph;
     vector<string> correct(const string &s);
     vector<string> m_words;
+    vector<int> findShortest(int start);
 
 public:
     Graph();
