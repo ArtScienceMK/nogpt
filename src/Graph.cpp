@@ -29,7 +29,7 @@ double Graph::getPathScore(vector<int> &path) const
         summCount += it.second;
     }
 
-    double U = (double) summCount / (double) L;
+    double U = (double)summCount / (double)L;
 
     return exp(-0.05 * abs(L - 15)) * P * exp(-0.5 * (U - 1));
 }
@@ -42,6 +42,32 @@ double Graph::getWeight(int from, int to) const
             return it.second;
     }
     return 0.0;
+}
+
+string Graph::pathToSentens(vector<int> &path) const {
+    /*  0 - word
+        1 - dight
+        2 - symbol
+    */
+    int last = 0;
+    string ans = "";
+    for (auto it : path) {
+        auto word = m_words[it];
+        if (isalpha(word[0])) {
+            ans += " " + word;
+            last = 0;
+        }
+        else if (isdigit(word[0])) {
+            if (last != 1) ans += " ";
+            ans += word;
+            last = 1;
+        }
+        else {
+            if (last != 0) ans += " ";
+            ans += word;
+            last = 2;
+        }
+    }
 }
 
 Graph::Graph() : m_graph(0),
@@ -108,24 +134,30 @@ vector<string> Graph::correct(const string &s)
     return correct_words;
 }
 
-vector<int> Graph::findShortest(int start) {
+vector<int> Graph::findShortest(int start)
+{
     vector<int> dist(1e6, INT_MAX);
     vector<int> pred(1e6, -1);
     dist[start] = 0;
     queue<int> q;
     q.push(start);
-    while (!q.empty()) {
+    while (!q.empty())
+    {
         int v = q.front();
         q.pop();
-        for (auto [u, trash] : m_graph[v]) {
-            if (dist[u] > dist[v] + 1) {
+        for (auto [u, trash] : m_graph[v])
+        {
+            if (dist[u] > dist[v] + 1)
+            {
                 dist[u] = dist[v] + 1;
                 pred[u] = v;
                 q.push(u);
-                if ((int)m_words[u].size() == 1 && !isalpha(m_words[u][0]) && !isdigit(m_words[u][0]) && dist[u] >= 2) {
+                if ((int)m_words[u].size() == 1 && !isalpha(m_words[u][0]) && !isdigit(m_words[u][0]) && dist[u] >= 2)
+                {
                     vector<int> path;
                     int curv = v;
-                    while (curv != -1) {
+                    while (curv != -1)
+                    {
                         path.push_back(curv);
                         curv = pred[curv];
                     }
@@ -137,7 +169,7 @@ vector<int> Graph::findShortest(int start) {
     }
 }
 
-void loadFromFile(string &filename)
+void Graph::loadFromFile(string &filename)
 {
     ifstream file(filename);
 

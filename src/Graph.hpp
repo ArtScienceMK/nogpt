@@ -15,6 +15,8 @@ private:
     double getPathScore(vector<int>& path) const;
     double getWeight(int from, int to) const;
 
+    string pathToSentens(vector<int>& path) const;
+
 public:
     Graph();
     void loadFromFile(string &filename);
