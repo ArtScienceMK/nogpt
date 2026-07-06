@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <filesystem>
 
 using namespace std;
 
@@ -20,6 +21,6 @@ private:
 
 public:
     Graph();
-    void loadFromFile(string &filename);
+    void loadFromFile(filesystem::path &filename);
     string answerTo(string &sentence);
 };

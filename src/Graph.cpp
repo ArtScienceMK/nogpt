@@ -80,6 +80,7 @@ string Graph::pathToSentence(vector<int> &path) const
 }
 
 Graph::Graph() : m_graph(0),
+                 m_revgraph(0),
                  m_words(0)
 {
 }
@@ -209,10 +210,13 @@ int Graph::getStart(const vector<string> &correct)
         {
             starts_end.push_back(cur.second);
         }
-        else {
+        else
+        {
             auto need_word = m_words[last - 1];
-            for (auto it : m_revgraph[cur.first]) {
-                if (m_words[it.first] == need_word) {
+            for (auto it : m_revgraph[cur.first])
+            {
+                if (m_words[it.first] == need_word)
+                {
                     q.push({it.first, cur.second});
                 }
             }
@@ -222,7 +226,7 @@ int Graph::getStart(const vector<string> &correct)
     return starts_end[Generator::getInstance().getSizeT(0, starts_end.size())];
 }
 
-void Graph::loadFromFile(string &filename)
+void Graph::loadFromFile(filesystem::path &filename)
 {
     ifstream file(filename);
 
@@ -247,7 +251,8 @@ void Graph::loadFromFile(string &filename)
     }
 }
 
-string Graph::answerTo(string &sentence) {
+string Graph::answerTo(string &sentence)
+{
     vector<string> good_sentence(correct(sentence));
     int start = getStart(good_sentence);
     vector<int> path = findShortestBFS(start);
