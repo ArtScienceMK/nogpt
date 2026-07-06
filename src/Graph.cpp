@@ -2,20 +2,17 @@
 #include <iostream>
 #include <vector>
 
-Graph::Graph() : m_graph(0),
-                 m_words(0)
 using namespace std;
 
-Graph::Graph() 
-{
-}
+Graph::Graph() : m_graph(0),
+                 m_words(0){}
 
 vector<string> Graph::correct(const string & s) {
     vector<string> words;
     string cur = "";
     for (char c : s)
     {
-        if (!is_alpha(c) && !is_digit(c))
+        if (!isalpha(c) && !isdigit(c))
         {
             words.push_back(cur);
             cur = "";
