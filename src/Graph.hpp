@@ -8,6 +8,8 @@ class Graph
 {
 private:
     vector<vector<pair<int, float>>> m_graph;
+    vector<vector<pair<int, float>>> m_revgraph;
+    vector<string> correct(const string &s);
     vector<string> m_words;
 
     vector<string> correct(const string &s);

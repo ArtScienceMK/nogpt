@@ -177,7 +177,27 @@ vector<int> Graph::findShortestBFS(int start)
     }
 }
 
-void Graph::loadFromFile(string &filename)
+int Graph::getStart(const vector<string>& correct) {
+    vector<int> endv;
+    for (int i = 0; i < (int)m_graph.size(); i++) {
+        if (m_words[i] == correct.back()) {
+            endv.push_back(i);
+        }
+    }
+    queue<pair<int, int>> q;
+    for (int v : endv) {
+        q.push({v, v});
+    }
+    while (!q.empty()) {
+        auto [startv, endv] = q.front();
+        q.pop();
+        for (auto [u, cost] : m_revgraph[startv]) {
+            if ()
+        }
+    }
+}
+
+void loadFromFile(string &filename)
 {
     ifstream file(filename);
 
