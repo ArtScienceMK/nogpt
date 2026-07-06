@@ -66,10 +66,25 @@ string Graph::findCurrentWord(const string &s)
     return correct_words;
 }
 
-void loadFromFile(string &filename)
+void Graph::loadFromFile(string &filename)
 {
     ifstream file(filename);
 
     int V;
     file >> V;
+    m_words.resize(V);
+    m_graph.resize(V);
+    for (size_t i = 0; i < V; i++)
+    {
+        file >> m_words[i];
+    }
+    int R;
+    file >> R;
+    for (size_t i = 0; i < R; i++)
+    {
+        int a, b;
+        float w;
+        file >> a >> b >> w;
+        m_graph[a].push_back({b, w});
+    }
 }
