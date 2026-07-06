@@ -220,5 +220,9 @@ void Graph::loadFromFile(string &filename)
     }
 }
 
-string Graph::answerTo(string &sentens) {
+string Graph::answerTo(string &sentence) {
+    vector<string> good_sentence(correct(sentence));
+    int start = getStart(good_sentence);
+    vector<int> path = findShortestBFS(start);
+    return pathToSentence(path);
 }
