@@ -3,10 +3,11 @@
 
 using namespace std;
 
-class Graph{
-private:
-    vector<string> allWords_;
-    vector<vector<pair<int, float>>> graph_;
-Graph();
-string findCurrentWord(const string & s);
+class Graph
+{
+    vector<vector<pair<int, float>>> m_graph;
+    string findCurrentWord(const string &s);
+
+public:
+    Graph();
 };

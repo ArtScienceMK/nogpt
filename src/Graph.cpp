@@ -2,14 +2,13 @@
 #include <iostream>
 #include <vector>
 
-using namespace std;
-
-Graph::Graph() 
+Graph::Graph() : m_graph(0)
 {
 }
 
-vector<string> Graph::correct(const string & s) {
-    vector<string> words;
+string Graph::findCurrentWord(const string &s)
+{
+    int need = (int)s.size();
     string cur = "";
     for (char c : s) {
         if (!is_alpha(c) && !is_digit(c)) {
