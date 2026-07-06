@@ -20,4 +20,12 @@ string Graph::findCurrentWord(const string &s)
             if (curMatches ==)
         }
     }
+    if ((int)cur.size() > 0) {
+        words.push_back(cur);
+    }
+    for (string words : words) {
+        int curMatches = 0;
+        int bestMatches = 0;
+        string
+    }
 }
