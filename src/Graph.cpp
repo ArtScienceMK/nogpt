@@ -33,7 +33,7 @@ vector<string> Graph::correct(const string & s) {
         int bestMatches = 0;
         string best = "";
         bool stopped = false;
-        for (string word : allWords_)
+        for (string word : m_words)
         {
             curMatches = 0;
             if (word.size() != cur.size())
