@@ -4,8 +4,9 @@
 using namespace std;
 
 class Graph{
-public:
-    vector<vector<pair<int, float>>> graph;
+private:
+    vector<string> allWords_;
+    vector<vector<pair<int, float>>> graph_;
 Graph();
 string findCurrentWord(const string & s);
 };
