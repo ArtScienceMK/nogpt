@@ -7,8 +7,8 @@ using namespace std;
 class Graph
 {
     vector<vector<pair<int, float>>> m_graph;
+    vector<string> correct(const string &s);
     vector<string> m_words;
-    string findCurrentWord(const string &s);
 
 public:
     Graph();

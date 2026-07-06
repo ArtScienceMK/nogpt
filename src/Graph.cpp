@@ -2,18 +2,17 @@
 #include <iostream>
 #include <vector>
 
-Graph::Graph() : m_graph(0),
-                 m_words(0)
-{
-}
+using namespace std;
 
-string Graph::findCurrentWord(const string &s)
-{
-    int need = (int)s.size();
+Graph::Graph() : m_graph(0),
+                 m_words(0){}
+
+vector<string> Graph::correct(const string & s) {
+    vector<string> words;
     string cur = "";
     for (char c : s)
     {
-        if (!is_alpha(c) && !is_digit(c))
+        if (!isalpha(c) && !isdigit(c))
         {
             words.push_back(cur);
             cur = "";
@@ -34,7 +33,7 @@ string Graph::findCurrentWord(const string &s)
         int bestMatches = 0;
         string best = "";
         bool stopped = false;
-        for (string word : allWords_)
+        for (string word : m_words)
         {
             curMatches = 0;
             if (word.size() != cur.size())
@@ -72,19 +71,4 @@ void Graph::loadFromFile(string &filename)
 
     int V;
     file >> V;
-    m_words.resize(V);
-    m_graph.resize(V);
-    for (size_t i = 0; i < V; i++)
-    {
-        file >> m_words[i];
-    }
-    int R;
-    file >> R;
-    for (size_t i = 0; i < R; i++)
-    {
-        int a, b;
-        float w;
-        file >> a >> b >> w;
-        m_graph[a].push_back({b, w});
-    }
 }
