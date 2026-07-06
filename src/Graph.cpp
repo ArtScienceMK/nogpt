@@ -197,7 +197,7 @@ int Graph::getStart(const vector<string>& correct) {
     }
 }
 
-void loadFromFile(string &filename)
+void Graph::loadFromFile(string &filename)
 {
     ifstream file(filename);
 
