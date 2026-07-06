@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <cmath>
 #include <algorithm>
+#include <climits>
 
 using namespace std;
 
@@ -108,7 +109,7 @@ vector<string> Graph::correct(const string &s)
     return correct_words;
 }
 
-vector<int> Graph::findShortest(int start) {
+vector<int> Graph::findShortestBFS(int start) {
     vector<int> dist(1e6, INT_MAX);
     vector<int> pred(1e6, -1);
     dist[start] = 0;

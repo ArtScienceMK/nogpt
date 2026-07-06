@@ -10,8 +10,8 @@ private:
     vector<vector<pair<int, float>>> m_graph;
     vector<string> correct(const string &s);
     vector<string> m_words;
-    vector<int> findShortest(int start);
-
+    vector<int> findShortestBFS(int start);
+    int getStart(const vector<string>&  correct);
     double getPathScore(vector<int>& path) const;
     double getWeight(int from, int to) const;
 
