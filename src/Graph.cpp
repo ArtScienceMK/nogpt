@@ -6,6 +6,7 @@
 #include <cmath>
 #include <algorithm>
 #include <climits>
+#include "Generator.hpp"
 
 using namespace std;
 
@@ -177,24 +178,48 @@ vector<int> Graph::findShortestBFS(int start)
     }
 }
 
-int Graph::getStart(const vector<string>& correct) {
-    vector<int> endv;
-    for (int i = 0; i < (int)m_graph.size(); i++) {
-        if (m_words[i] == correct.back()) {
+int Graph::getStart(const vector<string> &correct)
+{
+    vector<int> endv(0);
+    for (int i = 0; i < (int)m_graph.size(); i++)
+    {
+        if (m_words[i] == correct.back())
+        {
             endv.push_back(i);
         }
     }
+
     queue<pair<int, int>> q;
-    for (int v : endv) {
-        q.push({v, v});
+    for (auto it : endv)
+    {
+        q.push({it, it});
     }
-    while (!q.empty()) {
-        auto [startv, endv] = q.front();
+
+    auto last = correct.size() - 1;
+    vector<int> starts_end;
+    while (q.size())
+    {
+        auto cur = q.front();
         q.pop();
-        for (auto [u, cost] : m_revgraph[startv]) {
-            if ()
+        if (m_words[cur.first] != correct[last])
+        {
+            --last;
+        }
+        if (last == 0 || q.size() == 1)
+        {
+            starts_end.push_back(cur.second);
+        }
+        else {
+            auto need_word = m_words[last - 1];
+            for (auto it : m_revgraph[cur.first]) {
+                if (m_words[it.first] == need_word) {
+                    q.push({it.first, cur.second});
+                }
+            }
         }
     }
+
+    return starts_end[Generator::getInstance().getSizeT(0, starts_end.size())];
 }
 
 void Graph::loadFromFile(string &filename)
@@ -205,6 +230,7 @@ void Graph::loadFromFile(string &filename)
     file >> V;
     m_words.resize(V);
     m_graph.resize(V);
+    m_revgraph.resize(V);
     for (size_t i = 0; i < V; i++)
     {
         file >> m_words[i];
@@ -217,8 +243,10 @@ void Graph::loadFromFile(string &filename)
         float w;
         file >> a >> b >> w;
         m_graph[a].push_back({b, w});
+        m_revgraph[b].push_back({a, w});
     }
 }
 
-string Graph::answerTo(string &sentens) {
+string Graph::answerTo(string &sentens)
+{
 }
