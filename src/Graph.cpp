@@ -46,7 +46,7 @@ double Graph::getWeight(int from, int to) const
     return 0.0;
 }
 
-string Graph::pathToSentens(vector<int> &path) const
+string Graph::pathToSentence(vector<int> &path) const
 {
     /*  0 - word
         1 - dight
@@ -247,6 +247,9 @@ void Graph::loadFromFile(string &filename)
     }
 }
 
-string Graph::answerTo(string &sentens)
-{
+string Graph::answerTo(string &sentence) {
+    vector<string> good_sentence(correct(sentence));
+    int start = getStart(good_sentence);
+    vector<int> path = findShortestBFS(start);
+    return pathToSentence(path);
 }
