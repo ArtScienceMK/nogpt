@@ -30,7 +30,7 @@ private:
     double getPathScore(std::vector<int> &path) const;
     double getWeight(int from, int to) const;
 
-    void generatePokolenie(int count, std::set<std::pair<double, std::vector<int>>, greater<>> &pokolenie, int size, int start);
+    void generatePokolenie(int count, std::set<std::pair<double, std::vector<int>>, std::greater<>> &pokolenie, int size, int start);
 
     void cropPath(std::vector<int> &path);
     std::string pathToSentence(std::vector<int> &path) const;
