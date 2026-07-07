@@ -1,10 +1,9 @@
 #include "Graph.hpp"
 #include <iostream>
+#include <string>
 #include <fstream>
 #include <filesystem>
 #include <vector>
-
-using namespace std;
 
 #ifdef _WIN32
 #include <windows.h>
@@ -14,14 +13,14 @@ using namespace std;
 #include <unistd.h>
 #endif
 
-filesystem::path getAbsoluteFromExe(const filesystem::path &relativePath)
+std::filesystem::path getAbsoluteFromExe(const std::filesystem::path &relativePath)
 {
-    filesystem::path exePath;
+    std::filesystem::path exePath;
 
 #ifdef _WIN32
     wchar_t buffer[MAX_PATH];
     GetModuleFileNameW(NULL, buffer, MAX_PATH);
-    exePath = filesystem::path(buffer);
+    exePath = std::filesystem::path(buffer);
 
 #elif __APPLE__
     uint32_t size = 0;
@@ -35,27 +34,27 @@ filesystem::path getAbsoluteFromExe(const filesystem::path &relativePath)
 #elif __linux__
     exePath = filesystem::read_symlink("/proc/self/exe");
 #endif
-    filesystem::path exeDir = exePath.parent_path();
-    filesystem::path targetPath = filesystem::weakly_canonical(exeDir / relativePath);
-    filesystem::create_directories(targetPath.parent_path());
+    std::filesystem::path exeDir = exePath.parent_path();
+    std::filesystem::path targetPath = std::filesystem::weakly_canonical(exeDir / relativePath);
+    std::filesystem::create_directories(targetPath.parent_path());
 
     return targetPath;
 }
 
 int main()
 {
-    filesystem::path dataFile = getAbsoluteFromExe("../data/data.txt");
+    std::filesystem::path dataFile = getAbsoluteFromExe("../data/data.txt");
 
     Graph g;
     g.loadFromFile(dataFile);
 
-    string player = "";
-    cout << "Write 'q' to exit" << endl;
+    std::string player = "";
+    std::cout << "Write 'q' to exit" << std::endl;
 
     while (true)
     {
-        getline(cin, player);
+        std::getline(std::cin, player);
         if (player == "q") break;
-        cout << g.answerTo(player) << endl;
+        std::cout << g.answerTo(player) << std::endl;
     }
 }
