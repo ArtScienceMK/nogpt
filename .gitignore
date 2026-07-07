@@ -71,3 +71,6 @@ Testing/
 .vscode
 data/data.txt
 data/old_data.txt
+stat
+tozip/
+*.zip

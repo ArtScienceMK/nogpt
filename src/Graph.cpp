@@ -224,7 +224,7 @@ vector<int> Graph::findShortestBFS(int start)
                 dist[u] = dist[v] + 1;
                 pred[u] = v;
                 q.push(u);
-                if (m_words[u] == "." && dist[u] >= 3)
+                if ((m_words[u] == "." || m_words[u] == "!" || m_words[u] == "?") && dist[u] >= 3)
                 {
                     int curv = u;
                     while (curv != start)
@@ -388,7 +388,8 @@ vector<int> Graph::findKrandom(int start, int k)
     for (int i = 0; i < k; i++)
     {
         vector<int> cur(Generator::getInstance().getInt(2, 15));
-        for (int j = 0; j < (int)cur.size(); j++)
+        cur[0] = start;
+        for (int j = 1; j < (int)cur.size(); j++)
         {
             cur[j] = Generator::getInstance().getInt(0, (int)m_graph.size() - 1);
         }
@@ -405,6 +406,7 @@ vector<int> Graph::findKrandom(int start, int k)
             path = res[i];
         }
     }
+    path.erase(path.begin());
     return path;
 }
 
