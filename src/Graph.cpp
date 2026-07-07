@@ -232,8 +232,11 @@ vector<int> Graph::findProbbestDijkstra(int start)
     priority_queue<pair<float, int>, vector<pair<float, int>>, greater<pair<float, int>>> q;
     q.push({0, start});
     vector<int> path;
+    int ops = 6e5;
     while (!q.empty())
     {
+        ops--;
+        if (ops == 0) break;
         int v = q.top().second;
         q.pop();
         for (auto [u, prob] : m_graph[v])
@@ -254,9 +257,10 @@ vector<int> Graph::findProbbestDijkstra(int start)
     }
     // cout << "MxIdx: " << mxIdx << "\n";
     int curv = mxIdx;
-    while (curv != start && (int)path.size() <= 25)
+    while (curv != start && (int)path.size() <= 15)
     {
         path.push_back(curv);
+        if (m_words[curv] == ".") break;
         curv = pred[curv];
     }
     // cout << "Path has len: " << (int)path.size() << "\n";
