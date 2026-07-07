@@ -454,9 +454,9 @@ void Graph::generatePokolenie(int count, std::set<std::pair<double, std::vector<
     }
 }
 
-const int FIRST_POKOLENIE = 30;
+const int FIRST_POKOLENIE = 15;
 const int CHANCE_TO_MUTIR_CHILD = 15;
-const int COUNT_POKOLENIY = 100;
+const int COUNT_POKOLENIY = 55;
 
 std::vector<int> Graph::findGenetic(int len, int start)
 {
