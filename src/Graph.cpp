@@ -471,9 +471,9 @@ void Graph::loadFromFile(filesystem::path &filename)
 
 void Graph::answerTo(string &sentence, Statistic &stat)
 {
-    int alg_size = 5;
+    int alg_size = 7;
     stat.result_alg.resize(alg_size);
-    stat.algsName = {"ShortestBFS", "ProbbestDijkstra", "KbestBFS", "KlenBFS", "Krandom"};
+    stat.algsName = {"ShortestBFS", "ProbbestDijkstra", "KbestBFS", "KlenBFS", "Krandom1000", "Krandom5000", "Krandom20000"};
 
     auto ToCorrectWords = toCorrectWords(sentence);
     vector<string> good_sentence = ToCorrectWords.first;
@@ -496,8 +496,12 @@ void Graph::answerTo(string &sentence, Statistic &stat)
         path = findKbestBFS(start, Generator::getInstance().getInt(1, 50));
     else if (alg == 3)
         path = findKlenBFS(start, Generator::getInstance().getInt(2, 30));
+    else if (alg == 4)
+        path = findKrandom(start, 1000);
+    else if (alg == 5)
+        path = findKrandom(start, 5000);
     else
-        path = findKrandom(start, 5000); 
+        path = findKrandom(start, 20000); 
 
     int mark = 0;
     string smark = "";
