@@ -7,14 +7,15 @@
 using namespace std;
 
 #ifdef _WIN32
-    #include <windows.h>
+#include <windows.h>
 #elif __APPLE__
-    #include <mach-o/dyld.h>
+#include <mach-o/dyld.h>
 #elif __linux__
-    #include <unistd.h>
+#include <unistd.h>
 #endif
 
-filesystem::path getAbsoluteFromExe(const filesystem::path& relativePath) {
+filesystem::path getAbsoluteFromExe(const filesystem::path &relativePath)
+{
     filesystem::path exePath;
 
 #ifdef _WIN32
@@ -26,7 +27,8 @@ filesystem::path getAbsoluteFromExe(const filesystem::path& relativePath) {
     uint32_t size = 0;
     _NSGetExecutablePath(nullptr, &size);
     vector<char> buffer(size);
-    if (_NSGetExecutablePath(buffer.data(), &size) == 0) {
+    if (_NSGetExecutablePath(buffer.data(), &size) == 0)
+    {
         exePath = filesystem::path(buffer.data());
     }
 
@@ -40,7 +42,8 @@ filesystem::path getAbsoluteFromExe(const filesystem::path& relativePath) {
     return targetPath;
 }
 
-int main() {
+int main()
+{
     filesystem::path dataFile = getAbsoluteFromExe("../data/data.txt");
 
     Graph g;
@@ -48,10 +51,11 @@ int main() {
 
     string player = "";
     cout << "Write 'q' to exit" << endl;
-    cin >> player;
-    while (player != "q")
+
+    while (true)
     {
+        getline(cin, player);
+        if (player == "q") break;
         cout << g.answerTo(player) << endl;
-        cin >> player;
     }
 }
