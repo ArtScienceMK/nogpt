@@ -73,8 +73,11 @@ int main()
         g.answerTo(player, stat);
     }
 
+    std::ofstream file(getAbsoluteFromExe("./stat"));
+
     std::cout << "\n=== NoGpt Statistic ===\n"
               << std::endl;
+
     size_t maxSize = 0;
     for (size_t i = 0; i < stat.algsName.size(); i++)
     {
@@ -103,8 +106,34 @@ int main()
 
     std::cout << "\n-----------------------\n"
               << std::endl;
-    for (auto& it : stat.uncorrect_words)
+    for (auto &it : stat.uncorrect_words)
     {
         std::cout << it << ", ";
+    }
+
+    file << "\n=== NoGpt Statistic ===\n"
+         << std::endl;
+    for (size_t i = 0; i < maxSize; i++)
+    {
+        file << " ";
+    }
+    file << "  Точность   Количество   Сумма оценок\n";
+    for (size_t i = 0; i < stat.algsName.size(); i++)
+    {
+        file << stat.algsName[i];
+        for (size_t _ = 0; _ < maxSize - stat.algsName[i].size(); _++)
+        {
+            file << " ";
+        }
+        file << ": " << std::fixed << std::setprecision(2) << (float)stat.result_alg[i].second / (float)stat.result_alg[i].first;
+        file << "       " << stat.result_alg[i].first << "            " << stat.result_alg[i].second << std::endl;
+    }
+    file << "\n======== NoGpt ========\n"
+              << std::endl;
+    file << "\n-----------------------\n"
+              << std::endl;
+    for (auto &it : stat.uncorrect_words)
+    {
+        file << it << ", ";
     }
 }
