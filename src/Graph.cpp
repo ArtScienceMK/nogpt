@@ -358,6 +358,28 @@ vector<int> Graph::findKlenBFS(int start, int k)
     return path;
 }
 
+vector<int> Graph::findKrandom(int start, int k)
+{
+    vector<vector<int>> res(k);
+    for (int i = 0; i < k; i++) {
+        vector<int> cur(Generator::getInstance().getInt(2, 15));
+        for (int j = 0; j < (int)cur.size(); j++) {
+            cur[j] = Generator::getInstance().getInt(0, (int)m_graph.size()-1);
+        }
+        res[i] = cur;
+    }
+    double best_score = 0;
+    vector<int> path;
+    for (int i = 0; i < k; i++) {
+        double cur_score = getPathScore(res[i]);
+        if (cur_score > best_score) {
+            best_score = cur_score;
+            path = res[i];
+        }
+    }
+    return path;
+}
+
 int Graph::getStart(const vector<string> &correct)
 {
     vector<int> endv(0);
@@ -435,6 +457,6 @@ string Graph::answerTo(string &sentence)
 {
     vector<string> good_sentence = toCorrectWords(sentence);
     int start = getStart(good_sentence);
-    auto path = findProbbestDijkstra(start);
+    auto path = findKrandom(start, 500);
     return pathToSentence(path);
 }
