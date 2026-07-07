@@ -385,7 +385,8 @@ vector<int> Graph::findKrandom(int start, int k)
     for (int i = 0; i < k; i++)
     {
         vector<int> cur(Generator::getInstance().getInt(2, 15));
-        for (int j = 0; j < (int)cur.size(); j++)
+        cur[0] = start;
+        for (int j = 1; j < (int)cur.size(); j++)
         {
             cur[j] = Generator::getInstance().getInt(0, (int)m_graph.size() - 1);
         }
@@ -402,6 +403,7 @@ vector<int> Graph::findKrandom(int start, int k)
             path = res[i];
         }
     }
+    path.erase(path.begin());
     return path;
 }
 
