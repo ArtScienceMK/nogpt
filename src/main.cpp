@@ -21,6 +21,7 @@ std::filesystem::path getAbsoluteFromExe(const std::filesystem::path &relativePa
     wchar_t buffer[MAX_PATH];
     GetModuleFileNameW(NULL, buffer, MAX_PATH);
     exePath = std::filesystem::path(buffer);
+    
 
 #elif __APPLE__
     uint32_t size = 0;
@@ -43,6 +44,10 @@ std::filesystem::path getAbsoluteFromExe(const std::filesystem::path &relativePa
 
 int main()
 {
+    #ifdef _WIN32
+    SetConsoleCP(65001);
+    SetConsoleOutputCP(65001);
+    #endif
     std::filesystem::path dataFile = getAbsoluteFromExe("../data/data.txt");
 
     Graph g;
@@ -50,6 +55,7 @@ int main()
 
     std::string player = "";
     std::cout << "Write 'q' to exit" << std::endl;
+    
 
     while (true)
     {
