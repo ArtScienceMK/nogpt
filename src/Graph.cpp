@@ -221,7 +221,7 @@ vector<int> Graph::findShortestBFS(int start)
                 dist[u] = dist[v] + 1;
                 pred[u] = v;
                 q.push(u);
-                if (m_words[u] == "." && dist[u] >= 3)
+                if ((m_words[u] == "." || m_words[u] == "!" || m_words[u] == "?") && dist[u] >= 3)
                 {
                     int curv = u;
                     while (curv != start)
