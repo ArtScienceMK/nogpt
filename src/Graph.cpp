@@ -239,7 +239,8 @@ vector<int> Graph::findProbbestDijkstra(int start)
     while (!q.empty())
     {
         ops--;
-        if (ops == 0) break;
+        if (ops == 0)
+            break;
         int v = q.top().second;
         q.pop();
         for (auto [u, prob] : m_graph[v])
@@ -253,8 +254,10 @@ vector<int> Graph::findProbbestDijkstra(int start)
         }
     }
     float mxIdx = start;
-    for (int v = 0; v < (int)m_graph.size(); v++) {
-        if (dist[v] != 2e9 && dist[v] > dist[mxIdx]) {
+    for (int v = 0; v < (int)m_graph.size(); v++)
+    {
+        if (dist[v] != 2e9 && dist[v] > dist[mxIdx])
+        {
             mxIdx = v;
         }
     }
@@ -263,7 +266,8 @@ vector<int> Graph::findProbbestDijkstra(int start)
     while (curv != start && (int)path.size() <= 15)
     {
         path.push_back(curv);
-        if (m_words[curv] == ".") break;
+        if (m_words[curv] == ".")
+            break;
         curv = pred[curv];
     }
     // cout << "Path has len: " << (int)path.size() << "\n";
@@ -345,12 +349,16 @@ vector<int> Graph::findKlenBFS(int start, int k)
             }
         }
     }
-    while (true) {
+    while (true)
+    {
         k--;
-        for (int v = 0; v < (int)m_graph.size(); v++) {
-            if (m_words[v] == "." && dist[v] >= k + 1) {
+        for (int v = 0; v < (int)m_graph.size(); v++)
+        {
+            if (m_words[v] == "." && dist[v] >= k + 1)
+            {
                 int curv = v;
-                while (curv != start) {
+                while (curv != start)
+                {
                     path.push_back(curv);
                     curv = pred[curv];
                 }
@@ -365,18 +373,22 @@ vector<int> Graph::findKlenBFS(int start, int k)
 vector<int> Graph::findKrandom(int start, int k)
 {
     vector<vector<int>> res(k);
-    for (int i = 0; i < k; i++) {
+    for (int i = 0; i < k; i++)
+    {
         vector<int> cur(Generator::getInstance().getInt(2, 15));
-        for (int j = 0; j < (int)cur.size(); j++) {
-            cur[j] = Generator::getInstance().getInt(0, (int)m_graph.size()-1);
+        for (int j = 0; j < (int)cur.size(); j++)
+        {
+            cur[j] = Generator::getInstance().getInt(0, (int)m_graph.size() - 1);
         }
         res[i] = cur;
     }
     double best_score = 0;
     vector<int> path;
-    for (int i = 0; i < k; i++) {
+    for (int i = 0; i < k; i++)
+    {
         double cur_score = getPathScore(res[i]);
-        if (cur_score > best_score) {
+        if (cur_score > best_score)
+        {
             best_score = cur_score;
             path = res[i];
         }
@@ -459,9 +471,9 @@ void Graph::loadFromFile(filesystem::path &filename)
 
 void Graph::answerTo(string &sentence, Statistic &stat)
 {
-    int alg_size = 2;
+    int alg_size = 5;
     stat.result_alg.resize(alg_size);
-    stat.algsName = {"ShortestBFS", "KbestBFS"};
+    stat.algsName = {"ShortestBFS", "ProbbestDijkstra", "KbestBFS", "KlenBFS", "Krandom"};
 
     auto ToCorrectWords = toCorrectWords(sentence);
     vector<string> good_sentence = ToCorrectWords.first;
@@ -478,8 +490,14 @@ void Graph::answerTo(string &sentence, Statistic &stat)
     int alg = Generator::getInstance().getInt(0, alg_size - 1);
     if (alg == 0)
         path = findShortestBFS(start);
-    else
+    else if (alg == 1)
+        path = findProbbestDijkstra(start);
+    else if (alg == 2)
         path = findKbestBFS(start, Generator::getInstance().getInt(1, 50));
+    else if (alg == 3)
+        path = findKlenBFS(start, Generator::getInstance().getInt(2, 30));
+    else
+        path = findKrandom(start, 5000); 
 
     int mark = 0;
     string smark = "";
@@ -495,7 +513,8 @@ void Graph::answerTo(string &sentence, Statistic &stat)
             stat.result_alg[alg].second += mark;
         }
     }
-    catch (const std::string& error_message) {
+    catch (const std::string &error_message)
+    {
         std::cout << "Ошибка: " << error_message << std::endl;
     }
 }
