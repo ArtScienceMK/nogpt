@@ -396,6 +396,25 @@ vector<int> Graph::findKrandom(int start, int k)
     return path;
 }
 
+vector<int> Graph::findKgreedy(int start, int k)
+{
+    vector<int> path;
+    path.push_back(start);
+    while ((int)path.size() < k + 1) {
+        float best_prob = 0;
+        int best_u = -1;
+        for (auto [u, prob] : m_graph[path.back()]) {
+            if (prob > best_prob) {
+                best_prob = prob;
+                best_u = u;
+            }
+        }
+        path.push_back(best_u);
+    }
+    path.erase(path.begin());
+    return path;
+}
+
 int Graph::getStart(const vector<string> &correct)
 {
     vector<int> endv(0);
