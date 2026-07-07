@@ -21,19 +21,18 @@ std::filesystem::path getAbsoluteFromExe(const std::filesystem::path &relativePa
     wchar_t buffer[MAX_PATH];
     GetModuleFileNameW(NULL, buffer, MAX_PATH);
     exePath = std::filesystem::path(buffer);
-    
 
 #elif __APPLE__
     uint32_t size = 0;
     _NSGetExecutablePath(nullptr, &size);
-    vector<char> buffer(size);
+    std::vector<char> buffer(size);
     if (_NSGetExecutablePath(buffer.data(), &size) == 0)
     {
-        exePath = filesystem::path(buffer.data());
+        exePath = std::filesystem::path(buffer.data());
     }
 
 #elif __linux__
-    exePath = filesystem::read_symlink("/proc/self/exe");
+    exePath = std::filesystem::read_symlink("/proc/self/exe");
 #endif
     std::filesystem::path exeDir = exePath.parent_path();
     std::filesystem::path targetPath = std::filesystem::weakly_canonical(exeDir / relativePath);
@@ -44,23 +43,30 @@ std::filesystem::path getAbsoluteFromExe(const std::filesystem::path &relativePa
 
 int main()
 {
-    #ifdef _WIN32
+#ifdef _WIN32
     SetConsoleCP(65001);
     SetConsoleOutputCP(65001);
-    #endif
+#endif
     std::filesystem::path dataFile = getAbsoluteFromExe("../data/data.txt");
+
+    std::cout << "\n======== NoGpt ========\n"
+              << std::endl;
+    std::cout << "Loading...\n\n";
 
     Graph g;
     g.loadFromFile(dataFile);
 
     std::string player = "";
-    std::cout << "Write 'q' to exit" << std::endl;
-    
+    std::cout << "Команды:\n"
+              << " q - выйти и получить статистику\n";
+    std::cout << "\n======== NoGpt ========" << std::endl;
 
     while (true)
     {
+        std::cout << "💁 > ";
         std::getline(std::cin, player);
-        if (player == "q") break;
-        std::cout << g.answerTo(player) << std::endl;
+        if (player == "q")
+            break;
+        std::cout << "🤖 > " << g.answerTo(player) << std::endl;
     }
 }
