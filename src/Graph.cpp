@@ -571,7 +571,7 @@ int Graph::getStart(const vector<string> &correct)
 
     auto last = correct.size() - 1;
     vector<int> starts_end(0);
-    while (q.size())
+    while (!q.empty())
     {
         auto cur = q.front();
         q.pop();
@@ -580,7 +580,7 @@ int Graph::getStart(const vector<string> &correct)
         {
             --last;
         }
-        if (last == 0 || q.size() == 1)
+        if (last == 0 || q.size() == 0)
         {
             starts_end.push_back(cur.second);
         }
