@@ -225,6 +225,46 @@ vector<int> Graph::findShortestBFS(int start)
     return path;
 }
 
+vector<int> Graph::findKbestBFS(int start, int k)
+{
+    vector<int> dist(1e6, INT_MAX);
+    vector<int> pred(1e6, -1);
+    dist[start] = 0;
+    queue<int> q;
+    q.push(start);
+    vector<int> path;
+    int left = k;
+    while (!q.empty())
+    {
+        int v = q.front();
+        q.pop();
+        for (auto [u, trash] : m_graph[v])
+        {
+            if (dist[u] > dist[v] + 1)
+            {
+                dist[u] = dist[v] + 1;
+                pred[u] = v;
+                q.push(u);
+                if (m_words[u] == "." && dist[u] >= 2)
+                {
+                    left--;
+                    if (left != 0) continue;
+                    int curv = u;
+                    while (curv != start)
+                    {
+                        path.push_back(curv);
+                        curv = pred[curv];
+                    }
+                    reverse(path.begin(), path.end());
+                    return path;
+                }
+            }
+        }
+    }
+
+    return path;
+}
+
 int Graph::getStart(const vector<string> &correct)
 {
     vector<int> endv(0);
@@ -302,6 +342,6 @@ string Graph::answerTo(string &sentence)
 {
     vector<string> good_sentence = toCorrectWords(sentence);
     int start = getStart(good_sentence);
-    auto path = findShortestBFS(start);
+    auto path = findKbestBFS(start, Generator::getInstance().getInt(1, 50));
     return pathToSentence(path);
 }
