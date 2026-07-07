@@ -221,7 +221,46 @@ vector<int> Graph::findShortestBFS(int start)
             }
         }
     }
+    return path;
+}
 
+vector<int> Graph::findProbbestDijkstra(int start)
+{
+    vector<float> dist(1e6, 0);
+    vector<int> pred(1e6, -1);
+    dist[start] = 0;
+    priority_queue<pair<float, int>, vector<pair<float, int>>, greater<pair<float, int>>> q;
+    q.push({0, start});
+    vector<int> path;
+    while (!q.empty())
+    {
+        int v = q.top().second;
+        q.pop();
+        for (auto [u, prob] : m_graph[v])
+        {
+            if (dist[u] < dist[v] + prob)
+            {
+                dist[u] = dist[v] + prob;
+                pred[u] = v;
+                q.push({dist[u], u});
+            }
+        }
+    }
+    float mxIdx = start;
+    for (int v = 0; v < (int)m_graph.size(); v++) {
+        if (dist[v] != 2e9 && dist[v] > dist[mxIdx]) {
+            mxIdx = v;
+        }
+    }
+    // cout << "MxIdx: " << mxIdx << "\n";
+    int curv = mxIdx;
+    while (curv != start && (int)path.size() <= 25)
+    {
+        path.push_back(curv);
+        curv = pred[curv];
+    }
+    // cout << "Path has len: " << (int)path.size() << "\n";
+    reverse(path.begin(), path.end());
     return path;
 }
 
@@ -392,6 +431,6 @@ string Graph::answerTo(string &sentence)
 {
     vector<string> good_sentence = toCorrectWords(sentence);
     int start = getStart(good_sentence);
-    auto path = findKlenBFS(start, 5);
+    auto path = findProbbestDijkstra(start);
     return pathToSentence(path);
 }
