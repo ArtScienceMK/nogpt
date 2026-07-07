@@ -520,9 +520,9 @@ std::vector<int> Graph::findGenetic(int len, int start)
             pokolenie_next.insert({score2, second_parent});
 
             // mutacia
-            if (random() % CHANCE_TO_MUTIR_CHILD == 0)
+            if (Generator::getInstance().getInt(0, CHANCE_TO_MUTIR_CHILD - 1) == 0)
             {
-                std::swap(first_parent[random() % size_path], first_parent[random() % size_path]);
+                std::swap(first_parent[Generator::getInstance().getSizeT(0, size_path - 1)], first_parent[Generator::getInstance().getSizeT(0, size_path - 1)]);
                 copy = {start};
                 copy.insert(copy.end(), first_parent.begin(), first_parent.end());
                 double score = getPathScore(copy);
@@ -642,9 +642,10 @@ void Graph::loadFromFile(std::filesystem::path &filename)
 
 void Graph::answerTo(string &sentence, Statistic &stat)
 {
-    int alg_size = 9;
+    int alg_size = 10;
     stat.result_alg.resize(alg_size);
-    stat.algsName = {"ShortestBFS", "ProbbestDijkstra", "KbestBFS", "KlenBFS", "Krandom1000", "Krandom10000", "Krandom100000", "Krandom1000000", "Kgreedy"};
+    stat.algsName = {"ShortestBFS", "ProbbestDijkstra", "KbestBFS", "KlenBFS", "Krandom1000",
+                     "Krandom10000", "Krandom100000", "Krandom1000000", "Kgreedy", "Genetic"};
 
     auto ToCorrectWords = toCorrectWords(sentence);
     vector<string> good_sentence = ToCorrectWords.first;
@@ -675,8 +676,11 @@ void Graph::answerTo(string &sentence, Statistic &stat)
         path = findKrandom(start, 100000);
     else if (alg == 7)
         path = findKrandom(start, 1000000);
-    else
+    else if (alg == 8)
         path = findKgreedy(start, Generator::getInstance().getInt(2, 30));
+    else
+        path = findGenetic(Generator::getInstance().getInt(2, 30), start);
+
     cropPath(path);
     int mark = 0;
     string smark = "";
