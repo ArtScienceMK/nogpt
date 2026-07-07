@@ -47,7 +47,7 @@ int main()
     SetConsoleCP(65001);
     SetConsoleOutputCP(65001);
 #endif
-    std::filesystem::path dataFile = getAbsoluteFromExe("../data/data.txt");
+    std::filesystem::path dataFile = getAbsoluteFromExe("../data/data");
 
     std::cout << "\n======== NoGpt ========\n"
               << std::endl;

@@ -466,29 +466,48 @@ int Graph::getStart(const vector<string> &correct)
     return starts_end[Generator::getInstance().getSizeT(0, starts_end.size() - 1)];
 }
 
-void Graph::loadFromFile(filesystem::path &filename)
+void Graph::loadFromFile(std::filesystem::path &filename)
 {
-    ifstream file(filename);
+    std::ifstream file(filename, std::ios::binary);
+
+    if (!file.is_open()) {
+        std::cerr << "Не удалось открыть файл: " << filename << std::endl;
+        return;
+    }
 
     int V;
-    file >> V;
+    file.read((char *)&V, sizeof(V));
+    
     m_words.resize(V);
     m_graph.resize(V);
     m_revgraph.resize(V);
+
     for (size_t i = 0; i < V; i++)
     {
-        file >> m_words[i];
+        int length;
+        file.read((char *)&length, sizeof(length));
+        
+        m_words[i].resize(length);
+        file.read(&m_words[i][0], length);
     }
+
     int R;
-    file >> R;
+    file.read((char *)&R, sizeof(R));
+
     for (size_t i = 0; i < R; i++)
     {
         int a, b;
         float w;
-        file >> a >> b >> w;
+        
+        file.read((char *)&a, sizeof(a));
+        file.read((char *)&b, sizeof(b));
+        file.read((char *)&w, sizeof(w));
+        
         m_graph[a].push_back({b, w});
         m_revgraph[b].push_back({a, w});
     }
+
+    file.close();
 }
 
 void Graph::answerTo(string &sentence, Statistic &stat)
