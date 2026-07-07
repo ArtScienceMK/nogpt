@@ -224,7 +224,50 @@ vector<int> Graph::findShortestBFS(int start)
             }
         }
     }
+    return path;
+}
 
+vector<int> Graph::findProbbestDijkstra(int start)
+{
+    vector<float> dist(1e6, 0);
+    vector<int> pred(1e6, -1);
+    dist[start] = 0;
+    priority_queue<pair<float, int>, vector<pair<float, int>>, greater<pair<float, int>>> q;
+    q.push({0, start});
+    vector<int> path;
+    int ops = 6e5;
+    while (!q.empty())
+    {
+        ops--;
+        if (ops == 0) break;
+        int v = q.top().second;
+        q.pop();
+        for (auto [u, prob] : m_graph[v])
+        {
+            if (dist[u] < dist[v] + prob)
+            {
+                dist[u] = dist[v] + prob;
+                pred[u] = v;
+                q.push({dist[u], u});
+            }
+        }
+    }
+    float mxIdx = start;
+    for (int v = 0; v < (int)m_graph.size(); v++) {
+        if (dist[v] != 2e9 && dist[v] > dist[mxIdx]) {
+            mxIdx = v;
+        }
+    }
+    // cout << "MxIdx: " << mxIdx << "\n";
+    int curv = mxIdx;
+    while (curv != start && (int)path.size() <= 15)
+    {
+        path.push_back(curv);
+        if (m_words[curv] == ".") break;
+        curv = pred[curv];
+    }
+    // cout << "Path has len: " << (int)path.size() << "\n";
+    reverse(path.begin(), path.end());
     return path;
 }
 
@@ -266,6 +309,78 @@ vector<int> Graph::findKbestBFS(int start, int k)
         }
     }
 
+    return path;
+}
+
+vector<int> Graph::findKlenBFS(int start, int k)
+{
+    vector<int> dist(1e6, INT_MAX);
+    vector<int> pred(1e6, -1);
+    dist[start] = 0;
+    queue<int> q;
+    q.push(start);
+    vector<int> path;
+    while (!q.empty())
+    {
+        int v = q.front();
+        q.pop();
+        for (auto [u, trash] : m_graph[v])
+        {
+            if (dist[u] > dist[v] + 1)
+            {
+                dist[u] = dist[v] + 1;
+                pred[u] = v;
+                q.push(u);
+                if (m_words[u] == "." && dist[u] >= k + 1)
+                {
+                    int curv = u;
+                    while (curv != start)
+                    {
+                        path.push_back(curv);
+                        curv = pred[curv];
+                    }
+                    reverse(path.begin(), path.end());
+                    return path;
+                }
+            }
+        }
+    }
+    while (true) {
+        k--;
+        for (int v = 0; v < (int)m_graph.size(); v++) {
+            if (m_words[v] == "." && dist[v] >= k + 1) {
+                int curv = v;
+                while (curv != start) {
+                    path.push_back(curv);
+                    curv = pred[curv];
+                }
+                reverse(path.begin(), path.end());
+                return path;
+            }
+        }
+    }
+    return path;
+}
+
+vector<int> Graph::findKrandom(int start, int k)
+{
+    vector<vector<int>> res(k);
+    for (int i = 0; i < k; i++) {
+        vector<int> cur(Generator::getInstance().getInt(2, 15));
+        for (int j = 0; j < (int)cur.size(); j++) {
+            cur[j] = Generator::getInstance().getInt(0, (int)m_graph.size()-1);
+        }
+        res[i] = cur;
+    }
+    double best_score = 0;
+    vector<int> path;
+    for (int i = 0; i < k; i++) {
+        double cur_score = getPathScore(res[i]);
+        if (cur_score > best_score) {
+            best_score = cur_score;
+            path = res[i];
+        }
+    }
     return path;
 }
 
