@@ -71,11 +71,14 @@ bool isRussianAlphaOrDigit(const string &s, size_t idx)
     return false;
 }
 
-void Graph::cropPath(vector<int> & path) {
+void Graph::cropPath(vector<int> &path)
+{
     vector<int> cur;
-    for (int i = 0; i < (int)path.size(); i++) {
+    for (int i = 0; i < (int)path.size(); i++)
+    {
         cur.push_back(path[i]);
-        if (m_words[path[i]] == "." && i != 0) {
+        if (m_words[path[i]] == "." && i != 0)
+        {
             break;
         }
     }
@@ -427,6 +430,121 @@ vector<int> Graph::findKgreedy(int start, int k)
     return path;
 }
 
+void Graph::generatePokolenie(int count, std::set<std::pair<double, std::vector<int>>, greater<>> &pokolenie, int size, int start)
+{
+    for (unsigned int _ = 0; _ < count; _++)
+    {
+        std::vector<int> path{start};
+
+        for (size_t i = 0; i < size; i++)
+        {
+            path.push_back(Generator::getInstance().getInt(0, m_words.size() - 1));
+        }
+
+        double score = getPathScore(path);
+        path.erase(path.begin());
+        pokolenie.insert({score, path});
+    }
+}
+
+const int FIRST_POKOLENIE = 30;
+const int CHANCE_TO_MUTIR_CHILD = 15;
+const int COUNT_POKOLENIY = 100;
+
+std::vector<int> Graph::findGenetic(int len, int start)
+{
+    std::set<std::pair<double, std::vector<int>>, greater<>> pokolenie;
+
+    generatePokolenie(FIRST_POKOLENIE, pokolenie, len, start);
+
+    std::set<std::pair<double, std::vector<int>>, greater<>> pokolenie_next;
+
+    std::pair<double, std::vector<int>> best = *pokolenie.begin();
+
+    unsigned int size_path = len, path13 = size_path / 3, path23 = path13 * 2;
+
+    for (int _ = 0; _ < COUNT_POKOLENIY; _++)
+    {
+        // take +-2/3 best
+        auto mid23 = pokolenie.begin();
+        std::advance(mid23, pokolenie.size() / 3 * 2);
+
+        for (auto it = pokolenie.begin(); it != mid23; it++)
+        {
+            auto first_parent = (*it).second;
+            it++;
+            auto second_parent = (*it).second;
+
+            // get childs
+            std::unordered_set<int> first_center;
+            std::unordered_set<int> second_center;
+
+            for (int i = path13; i < path23; i++)
+            {
+                first_center.insert(first_parent[i]);
+                second_center.insert(second_parent[i]);
+            }
+
+            std::vector<int> first_group(0);
+            std::vector<int> second_group(0);
+
+            for (int i = 0; i < size_path; i++)
+            {
+                if (!second_center.count(first_parent[i]))
+                    first_group.push_back(first_parent[i]);
+                if (!first_center.count(second_parent[i]))
+                    second_group.push_back(second_parent[i]);
+            }
+
+            for (int i = 0; i < path13; i++)
+            {
+                first_parent[i] = second_group[i];
+                second_parent[i] = first_group[i];
+            }
+            for (int i = path23; i < size_path; i++)
+            {
+                first_parent[i] = second_group[i - path23 + path13];
+                second_parent[i] = first_group[i - path23 + path13];
+            }
+
+            vector<int> copy = {start};
+            copy.insert(copy.end(), first_parent.begin(), first_parent.end());
+            double score1 = getPathScore(copy);
+            copy = {start};
+            copy.insert(copy.end(), second_parent.begin(), second_parent.end());
+            double score2 = getPathScore(copy);
+
+            pokolenie_next.insert({score1, first_parent});
+            pokolenie_next.insert({score2, second_parent});
+
+            // mutacia
+            if (random() % CHANCE_TO_MUTIR_CHILD == 0)
+            {
+                std::swap(first_parent[random() % size_path], first_parent[random() % size_path]);
+                copy = {start};
+                copy.insert(copy.end(), first_parent.begin(), first_parent.end());
+                double score = getPathScore(copy);
+                pokolenie_next.insert({score, first_parent});
+            }
+        }
+
+        // +-random 1 / 3
+        if (pokolenie_next.size() < pokolenie.size())
+        {
+            generatePokolenie(pokolenie.size() - pokolenie_next.size(), pokolenie_next, len, start);
+        }
+
+        pokolenie = pokolenie_next;
+        if (best.first < pokolenie_next.begin()->first)
+        {
+            best = *pokolenie_next.begin();
+        }
+        pokolenie_next.clear();
+    }
+
+    return best.second;
+}
+
 int Graph::getStart(const vector<string> &correct)
 {
     vector<int> endv(0);
@@ -479,14 +597,15 @@ void Graph::loadFromFile(std::filesystem::path &filename)
 {
     std::ifstream file(filename, std::ios::binary);
 
-    if (!file.is_open()) {
+    if (!file.is_open())
+    {
         std::cerr << "Не удалось открыть файл: " << filename << std::endl;
         return;
     }
 
     int V;
     file.read((char *)&V, sizeof(V));
-    
+
     m_words.resize(V);
     m_graph.resize(V);
     m_revgraph.resize(V);
@@ -495,7 +614,7 @@ void Graph::loadFromFile(std::filesystem::path &filename)
     {
         int length;
         file.read((char *)&length, sizeof(length));
-        
+
         m_words[i].resize(length);
         file.read(&m_words[i][0], length);
     }
@@ -507,11 +626,11 @@ void Graph::loadFromFile(std::filesystem::path &filename)
     {
         int a, b;
         float w;
-        
+
         file.read((char *)&a, sizeof(a));
         file.read((char *)&b, sizeof(b));
         file.read((char *)&w, sizeof(w));
-        
+
         m_graph[a].push_back({b, w});
         m_revgraph[b].push_back({a, w});
     }

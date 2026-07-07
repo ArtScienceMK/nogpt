@@ -2,6 +2,8 @@
 #include <vector>
 #include <fstream>
 #include <filesystem>
+#include <set>
+#include <unordered_set>
 
 struct Statistic
 {
@@ -23,11 +25,14 @@ private:
     std::vector<int> findKlenBFS(int start, int k);
     std::vector<int> findKrandom(int start, int k);
     std::vector<int> findKgreedy(int start, int k);
+    std::vector<int> findGenetic(int len, int start);
     int getStart(const std::vector<std::string> &correct);
     double getPathScore(std::vector<int> &path) const;
     double getWeight(int from, int to) const;
 
-    void cropPath(std::vector<int>& path);
+    void generatePokolenie(int count, std::set<std::pair<double, std::vector<int>>, greater<>> &pokolenie, int size, int start);
+
+    void cropPath(std::vector<int> &path);
     std::string pathToSentence(std::vector<int> &path) const;
 
 public:
