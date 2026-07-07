@@ -100,4 +100,11 @@ int main()
 
     std::cout << "\n======== NoGpt ========\n"
               << std::endl;
+
+    std::cout << "\n-----------------------\n"
+              << std::endl;
+    for (auto& it : stat.uncorrect_words)
+    {
+        std::cout << it << ", ";
+    }
 }
