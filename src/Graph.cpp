@@ -221,7 +221,7 @@ vector<int> Graph::findShortestBFS(int start)
                 dist[u] = dist[v] + 1;
                 pred[u] = v;
                 q.push(u);
-                if (m_words[u] == "." && dist[u] >= 2)
+                if (m_words[u] == "." && dist[u] >= 3)
                 {
                     int curv = u;
                     while (curv != start)
@@ -306,7 +306,7 @@ vector<int> Graph::findKbestBFS(int start, int k)
                 dist[u] = dist[v] + 1;
                 pred[u] = v;
                 q.push(u);
-                if (m_words[u] == "." && dist[u] >= 2)
+                if (m_words[u] == "." && dist[u] >= 3)
                 {
                     left--;
                     if (left != 0)
@@ -346,7 +346,7 @@ vector<int> Graph::findKlenBFS(int start, int k)
                 dist[u] = dist[v] + 1;
                 pred[u] = v;
                 q.push(u);
-                if (m_words[u] == "." && dist[u] >= k + 1)
+                if (m_words[u] == "." && dist[u] >= k + 2)
                 {
                     int curv = u;
                     while (curv != start)
