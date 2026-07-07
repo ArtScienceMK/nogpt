@@ -235,7 +235,6 @@ vector<int> Graph::findShortestBFS(int start)
             }
         }
     }
-    if ((int)path.size() < 2) findShortestBFS(start);
     return path;
 }
 
@@ -282,7 +281,6 @@ vector<int> Graph::findProbbestDijkstra(int start)
             break;
         curv = pred[curv];
     }
-    if ((int)path.size() < 2) findProbbestDijkstra(start);
     // cout << "Path has len: " << (int)path.size() << "\n";
     reverse(path.begin(), path.end());
     return path;
@@ -325,7 +323,6 @@ vector<int> Graph::findKbestBFS(int start, int k)
             }
         }
     }
-    if ((int)path.size() < 2) findKbestBFS(start, k);
     return path;
 }
 
@@ -379,7 +376,6 @@ vector<int> Graph::findKlenBFS(int start, int k)
             }
         }
     }
-    if ((int)path.size() < 2) findKlenBFS(start, k);
     return path;
 }
 
@@ -406,7 +402,6 @@ vector<int> Graph::findKrandom(int start, int k)
             path = res[i];
         }
     }
-    if ((int)path.size() < 2) findKrandom(start, k);
     return path;
 }
 
@@ -429,7 +424,6 @@ vector<int> Graph::findKgreedy(int start, int k)
         path.push_back(best_u);
     }
     path.erase(path.begin());
-    if ((int)path.size() < 2) findKgreedy(start, k);
     return path;
 }
 
