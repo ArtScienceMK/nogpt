@@ -12,6 +12,7 @@ private:
     std::vector<std::string> m_words;
     std::vector<int> findShortestBFS(int start);
     std::vector<int> findKbestBFS(int start, int k);
+    std::vector<int> findKlenBFS(int start, int k);
     int getStart(const std::vector<std::string> &correct);
     double getPathScore(std::vector<int> &path) const;
     double getWeight(int from, int to) const;
