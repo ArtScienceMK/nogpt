@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <climits>
 #include <string>
+#include <cctype>
 #include "Generator.hpp"
 
 using namespace std;
@@ -125,6 +126,208 @@ Graph::Graph() : m_graph(0),
 {
 }
 
+bool isRussianAlphaOrDigitDop(const string &s, size_t i)
+{
+    unsigned char c = s[i];
+    if (isalnum(c))
+        return true;
+    if (c >= 0x80)
+        return true;
+    if (c == '\'' || c == '-')
+        return true;
+    return false;
+}
+
+bool isNumberWithSeparators(const string &s)
+{
+    if (s.empty())
+        return false;
+    bool hasSeparator = false;
+    bool hasDigit = false;
+    for (char c : s)
+    {
+        if (isdigit((unsigned char)c))
+        {
+            hasDigit = true;
+        }
+        else if (c == '.' || c == ',')
+        {
+            hasSeparator = true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    return hasDigit && hasSeparator;
+}
+
+bool isAbbreviation(const string &s)
+{
+    if (s.size() < 3 || s.find('.') == string::npos)
+        return false;
+
+    size_t start = 0;
+    int parts = 0;
+    for (size_t i = 0; i <= s.size(); i++)
+    {
+        if (i == s.size() || s[i] == '.')
+        {
+            if (i == start)
+                return false;
+            if (i - start > 3)
+                return false;
+            for (size_t j = start; j < i; j++)
+            {
+                if (!isalpha((unsigned char)s[j]) || (unsigned char)s[j] >= 0x80)
+                {
+                    return false;
+                }
+            }
+            parts++;
+            start = i + 1;
+        }
+    }
+    return parts >= 2;
+}
+
+bool startsWithURL(const string &s, size_t pos)
+{
+    if (pos + 7 <= s.size() && s.substr(pos, 7) == "http://")
+        return true;
+    if (pos + 8 <= s.size() && s.substr(pos, 8) == "https://")
+        return true;
+    if (pos + 4 <= s.size() && s.substr(pos, 4) == "www.")
+        return true;
+    return false;
+}
+
+string extractURL(const string &s, size_t &pos)
+{
+    string url;
+    while (pos < s.size() && !isspace((unsigned char)s[pos]) &&
+           s[pos] != '"' && s[pos] != '\'' && s[pos] != ')' && s[pos] != ']')
+    {
+        url += s[pos];
+        pos++;
+    }
+    while (!url.empty() && (url.back() == '.' || url.back() == ','))
+    {
+        if (pos >= s.size() || isspace((unsigned char)s[pos]))
+        {
+            url.pop_back();
+        }
+        else
+        {
+            break;
+        }
+    }
+    return url;
+}
+
+vector<string> expandURL(const string &url)
+{
+    vector<string> parts;
+    size_t i = 0;
+
+    if (url.substr(0, 8) == "https://")
+        i = 8;
+    else if (url.substr(0, 7) == "http://")
+        i = 7;
+    else if (url.substr(0, 4) == "www.")
+        i = 4;
+
+    string current;
+    for (; i < url.size(); i++)
+    {
+        char c = url[i];
+        if (isalnum((unsigned char)c) || c >= 0x80 || c == '-' || c == '_')
+        {
+            current += c;
+        }
+        else
+        {
+            if (!current.empty())
+            {
+                parts.push_back(current);
+                current.clear();
+            }
+            if (c == '.' || c == '/' || c == ':' || c == '?' || c == '&' || c == '=')
+            {
+                parts.push_back(string(1, c));
+            }
+        }
+    }
+    if (!current.empty())
+        parts.push_back(current);
+
+    return parts;
+}
+
+vector<string> expandNumber(const string &num)
+{
+    vector<string> digits;
+    for (char c : num)
+    {
+        if (isdigit((unsigned char)c))
+        {
+            digits.push_back(string(1, c));
+        }
+    }
+    return digits;
+}
+
+vector<string> expandAbbreviation(const string &abbr)
+{
+    vector<string> parts;
+    for (char c : abbr)
+    {
+        parts.push_back(string(1, c));
+    }
+    return parts;
+}
+
+void addToken(const string &token, vector<string> &words)
+{
+    if (token.empty())
+        return;
+
+    if (isNumberWithSeparators(token))
+    {
+        if (Generator::getInstance().getInt(0, 1) == 0)
+        {
+            words.push_back(token);
+        }
+        else
+        {
+            auto digits = expandNumber(token);
+            for (const auto &d : digits)
+            {
+                words.push_back(d);
+            }
+        }
+    }
+    else if (isAbbreviation(token))
+    {
+        if (Generator::getInstance().getInt(0, 1) == 0)
+        {
+            words.push_back(token);
+        }
+        else
+        {
+            auto parts = expandAbbreviation(token);
+            for (const auto &p : parts)
+            {
+                words.push_back(p);
+            }
+        }
+    }
+    else
+    {
+        words.push_back(token);
+    }
+}
+
 void toWords(const string &s, vector<string> &words)
 {
     string now = "";
@@ -136,13 +339,41 @@ void toWords(const string &s, vector<string> &words)
         if (ch == ' ')
         {
             if (now != "")
-                words.push_back(now);
-            now = "";
+            {
+                addToken(now, words);
+                now = "";
+            }
         }
-        else if (!isRussianAlphaOrDigit(s, i))
+        else if (startsWithURL(s, i))
         {
             if (now != "")
-                words.push_back(now);
+            {
+                addToken(now, words);
+                now = "";
+            }
+            string url = extractURL(s, i);
+
+            if (Generator::getInstance().getInt(0, 1) == 0)
+            {
+                words.push_back(url);
+            }
+            else
+            {
+                auto parts = expandURL(url);
+                for (const auto &p : parts)
+                {
+                    words.push_back(p);
+                }
+            }
+            i--;
+        }
+        else if (!isRussianAlphaOrDigitDop(s, i))
+        {
+            if (now != "")
+            {
+                addToken(now, words);
+                now = "";
+            }
             now = ch;
             words.push_back(now);
             now = "";
@@ -152,9 +383,10 @@ void toWords(const string &s, vector<string> &words)
             now += ch;
         }
     }
+
     if (now.size() > 0)
     {
-        words.push_back(now);
+        addToken(now, words);
     }
 }
 
@@ -206,8 +438,8 @@ pair<vector<string>, vector<string>> Graph::toCorrectWords(const string &s)
 
 vector<int> Graph::findShortestBFS(int start)
 {
-    vector<int> dist(1e6, INT_MAX);
-    vector<int> pred(1e6, -1);
+    vector<int> dist(m_graph.size(), INT_MAX);
+    vector<int> pred(m_graph.size(), -1);
     dist[start] = 0;
     queue<int> q;
     q.push(start);
@@ -244,8 +476,8 @@ vector<int> Graph::findShortestBFS(int start)
 
 vector<int> Graph::findProbbestDijkstra(int start)
 {
-    vector<float> dist(1e6, 0);
-    vector<int> pred(1e6, -1);
+    vector<float> dist(m_graph.size(), 0);
+    vector<int> pred(m_graph.size(), -1);
     dist[start] = 0;
     priority_queue<pair<float, int>, vector<pair<float, int>>, greater<pair<float, int>>> q;
     q.push({0, start});
@@ -293,8 +525,8 @@ vector<int> Graph::findProbbestDijkstra(int start)
 
 vector<int> Graph::findKbestBFS(int start, int k)
 {
-    vector<int> dist(1e6, INT_MAX);
-    vector<int> pred(1e6, -1);
+    vector<int> dist(m_graph.size(), INT_MAX);
+    vector<int> pred(m_graph.size(), -1);
     dist[start] = 0;
     queue<int> q;
     q.push(start);
@@ -334,8 +566,8 @@ vector<int> Graph::findKbestBFS(int start, int k)
 
 vector<int> Graph::findKlenBFS(int start, int k)
 {
-    vector<int> dist(1e6, INT_MAX);
-    vector<int> pred(1e6, -1);
+    vector<int> dist(m_graph.size(), INT_MAX);
+    vector<int> pred(m_graph.size(), -1);
     dist[start] = 0;
     queue<int> q;
     q.push(start);
@@ -392,7 +624,7 @@ vector<int> Graph::findKrandom(int start, int k)
     vector<vector<int>> res(k);
     for (int i = 0; i < k; i++)
     {
-        vector<int> cur(Generator::getInstance().getInt(2, 15));
+        vector<int> cur(Generator::getInstance().getInt(3, 30));
         cur[0] = start;
         for (int j = 1; j < (int)cur.size(); j++)
         {
@@ -437,11 +669,11 @@ vector<int> Graph::findKgreedy(int start, int k)
     return path;
 }
 
-void Graph::generatePokolenie(int count, std::set<std::pair<double, std::vector<int>>, greater<>> &pokolenie, int size, int start)
+void Graph::generatePokolenie(int count, set<pair<double, vector<int>>, greater<>> &pokolenie, int size, int start)
 {
     for (unsigned int _ = 0; _ < count; _++)
     {
-        std::vector<int> path{start};
+        vector<int> path{start};
 
         for (size_t i = 0; i < size; i++)
         {
@@ -571,12 +803,12 @@ int Graph::getStart(const vector<string> &correct)
 
     auto last = correct.size() - 1;
     vector<int> starts_end(0);
-    while (!q.empty())
+    while (!q.empty() && last >= 0)
     {
         auto cur = q.front();
         q.pop();
 
-        if (last > 0 && m_words[cur.first] != correct[last])
+        if (m_words[cur.first] != correct[last])
         {
             --last;
         }
@@ -666,7 +898,7 @@ void Graph::answerTo(string &sentence, Statistic &stat)
     vector<int> path;
     int alg = Generator::getInstance().getInt(0, alg_size - 1);
 
-    cout << "🤖 (" << stat.algsName[alg] << ")" << " ";
+    cout << "🤖 (" << stat.algsName[alg] << ")\n";
 
     if (alg == 0)
         path = findShortestBFS(start);
@@ -704,8 +936,8 @@ void Graph::answerTo(string &sentence, Statistic &stat)
             stat.result_alg[alg].second += mark;
         }
     }
-    catch (const std::string &error_message)
+    catch (const std::exception &e)
     {
-        std::cout << "Ошибка: " << error_message << std::endl;
+        std::cout << "Ошибка ввода: " << e.what() << std::endl;
     }
 }
