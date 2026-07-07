@@ -59,14 +59,45 @@ int main()
     std::string player = "";
     std::cout << "Команды:\n"
               << " q - выйти и получить статистику\n";
-    std::cout << "\n======== NoGpt ========" << std::endl;
+    std::cout << "\n======== NoGpt ========"
+              << std::endl;
+
+    Statistic stat;
 
     while (true)
     {
-        std::cout << "💁 > ";
+        std::cout << "\n💁 > ";
         std::getline(std::cin, player);
         if (player == "q")
             break;
-        std::cout << "🤖 > " << g.answerTo(player) << std::endl;
+        g.answerTo(player, stat);
     }
+
+    std::cout << "\n=== NoGpt Statistic ===\n"
+              << std::endl;
+    size_t maxSize = 0;
+    for (size_t i = 0; i < stat.algsName.size(); i++)
+    {
+        maxSize = std::max(stat.algsName[i].size(), maxSize);
+    }
+
+    for (size_t i = 0; i < maxSize; i++)
+    {
+        std::cout << " ";
+    }
+    std::cout << "  Точность   Количество   Сумма оценок\n";
+
+    for (size_t i = 0; i < stat.algsName.size(); i++)
+    {
+        std::cout << stat.algsName[i];
+        for (size_t _ = 0; _ < maxSize - stat.algsName[i].size(); _++)
+        {
+            std::cout << " ";
+        }
+        std::cout << ": " << std::fixed << std::setprecision(2) << (float)stat.result_alg[i].second / (float)stat.result_alg[i].first;
+        std::cout << "       " << stat.result_alg[i].first << "            " << stat.result_alg[i].second << std::endl;
+    }
+
+    std::cout << "\n======== NoGpt ========\n"
+              << std::endl;
 }

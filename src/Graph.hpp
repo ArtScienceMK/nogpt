@@ -3,12 +3,19 @@
 #include <fstream>
 #include <filesystem>
 
+struct Statistic
+{
+    std::vector<std::string> uncorrect_words;
+    std::vector<std::string> algsName;
+    std::vector<std::pair<int, long long>> result_alg;
+};
+
 class Graph
 {
 private:
     std::vector<std::vector<std::pair<int, float>>> m_graph;
     std::vector<std::vector<std::pair<int, float>>> m_revgraph;
-    std::vector<std::string> toCorrectWords(const std::string &s);
+    std::pair<std::vector<std::string>, std::vector<std::string>> toCorrectWords(const std::string &s);
     std::vector<std::string> m_words;
     std::vector<int> findShortestBFS(int start);
     std::vector<int> findKbestBFS(int start, int k);
@@ -21,5 +28,5 @@ private:
 public:
     Graph();
     void loadFromFile(std::filesystem::path &filename);
-    std::string answerTo(std::string &sentence);
+    void answerTo(std::string &sentence, Statistic &stat);
 };

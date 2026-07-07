@@ -6,6 +6,7 @@
 #include <cmath>
 #include <algorithm>
 #include <climits>
+#include <string>
 #include "Generator.hpp"
 
 using namespace std;
@@ -143,12 +144,13 @@ void toWords(const string &s, vector<string> &words)
     }
 }
 
-vector<string> Graph::toCorrectWords(const string &s)
+pair<vector<string>, vector<string>> Graph::toCorrectWords(const string &s)
 {
     vector<string> blocks(0);
     toWords(s, blocks);
 
     vector<string> correct_words;
+    vector<string> uncorrect_words;
 
     for (string block : blocks)
     {
@@ -181,10 +183,11 @@ vector<string> Graph::toCorrectWords(const string &s)
         }
         if (!stopped)
         {
+            uncorrect_words.push_back(block);
             correct_words.push_back(best);
         }
     }
-    return correct_words;
+    return {correct_words, uncorrect_words};
 }
 
 vector<int> Graph::findShortestBFS(int start)
@@ -248,7 +251,8 @@ vector<int> Graph::findKbestBFS(int start, int k)
                 if (m_words[u] == "." && dist[u] >= 2)
                 {
                     left--;
-                    if (left != 0) continue;
+                    if (left != 0)
+                        continue;
                     int curv = u;
                     while (curv != start)
                     {
@@ -338,10 +342,45 @@ void Graph::loadFromFile(filesystem::path &filename)
     }
 }
 
-string Graph::answerTo(string &sentence)
+void Graph::answerTo(string &sentence, Statistic &stat)
 {
-    vector<string> good_sentence = toCorrectWords(sentence);
+    int alg_size = 2;
+    stat.result_alg.resize(alg_size);
+    stat.algsName = {"ShortestBFS", "KbestBFS"};
+
+    auto ToCorrectWords = toCorrectWords(sentence);
+    vector<string> good_sentence = ToCorrectWords.first;
+    vector<string> uncorrect = ToCorrectWords.second;
+
+    for (size_t i = 0; i < uncorrect.size(); i++)
+    {
+        stat.uncorrect_words.push_back(uncorrect[i]);
+    }
+
     int start = getStart(good_sentence);
-    auto path = findKbestBFS(start, Generator::getInstance().getInt(1, 50));
-    return pathToSentence(path);
+
+    vector<int> path;
+    int alg = Generator::getInstance().getInt(0, alg_size - 1);
+    if (alg == 0)
+        path = findShortestBFS(start);
+    else
+        path = findKbestBFS(start, Generator::getInstance().getInt(1, 50));
+
+    int mark = 0;
+    string smark = "";
+    std::cout << "🤖 > " << pathToSentence(path) << std::endl;
+    cout << "⭐ (Оценка алгоритма х/10) > ";
+    getline(cin, smark);
+    try
+    {
+        mark = stoi(smark);
+        if (mark >= 0 && mark <= 10)
+        {
+            ++stat.result_alg[alg].first;
+            stat.result_alg[alg].second += mark;
+        }
+    }
+    catch (const std::string& error_message) {
+        std::cout << "Ошибка: " << error_message << std::endl;
+    }
 }
