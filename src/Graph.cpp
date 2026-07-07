@@ -46,23 +46,46 @@ double Graph::getWeight(int from, int to) const
     return 0.0;
 }
 
+bool isRussianAlphaOrDigit(const string &s, size_t idx)
+{
+    if (idx >= s.length())
+        return false;
+    unsigned char ch = s[idx];
+    if ((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z'))
+    {
+        return true;
+    }
+    if (ch == 0xD0 || ch == 0xD1)
+    {
+        return true;
+    }
+    if (idx > 0)
+    {
+        unsigned char prev_ch = s[idx - 1];
+        if (prev_ch == 0xD0 || prev_ch == 0xD1)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 string Graph::pathToSentence(vector<int> &path) const
 {
-    /*  0 - word
-        1 - dight
-        2 - symbol
-    */
     int last = 0;
     string ans = "";
     for (auto it : path)
     {
         auto word = m_words[it];
-        if (isalpha(word[0]))
+        if (word.empty())
+            continue;
+
+        if (isRussianAlphaOrDigit(word, 0) && !isdigit((unsigned char)word[0]))
         {
             ans += " " + word;
             last = 0;
         }
-        else if (isdigit(word[0]))
+        else if (isdigit((unsigned char)word[0]))
         {
             if (last != 1)
                 ans += " ";
@@ -77,6 +100,8 @@ string Graph::pathToSentence(vector<int> &path) const
             last = 2;
         }
     }
+
+    return ans;
 }
 
 Graph::Graph() : m_graph(0),
@@ -85,60 +110,78 @@ Graph::Graph() : m_graph(0),
 {
 }
 
-vector<string> Graph::correct(const string &s)
+void toWords(const string &s, vector<string> &words)
 {
-    vector<string> words;
-    string cur = "";
-    for (char c : s)
+    string now = "";
+
+    for (size_t i = 0; i < s.length(); ++i)
     {
-        if (!isalpha(c) && !isdigit(c))
+        char ch = s[i];
+
+        if (ch == ' ')
         {
-            words.push_back(cur);
-            cur = "";
+            if (now != "")
+                words.push_back(now);
+            now = "";
+        }
+        else if (!isRussianAlphaOrDigit(s, i))
+        {
+            if (now != "")
+                words.push_back(now);
+            now = ch;
+            words.push_back(now);
+            now = "";
         }
         else
         {
-            cur += c;
+            now += ch;
         }
     }
-    if ((int)cur.size() > 0)
+    if (now.size() > 0)
     {
-        words.push_back(cur);
+        words.push_back(now);
     }
+}
+
+vector<string> Graph::toCorrectWords(const string &s)
+{
+    vector<string> blocks(0);
+    toWords(s, blocks);
+
     vector<string> correct_words;
-    for (string cur : words)
+
+    for (string block : blocks)
     {
         int curMatches = 0;
-        int bestMatches = 0;
-        string best = "";
+        int bestMatches = INT_MIN;
+        string best = "ERROR";
         bool stopped = false;
         for (string word : m_words)
         {
             curMatches = 0;
-            if (word.size() != cur.size())
-                continue;
-            for (int i = 0; i < (int)word.size(); i++)
+            for (int i = 0; i < (int)min(word.size(), block.size()); i++)
             {
-                if (cur[i] == word[i])
+                if (block[i] == word[i])
                 {
                     curMatches++;
                 }
             }
-            if (curMatches == (int)cur.size())
+            curMatches -= abs((int)word.size() - (int)block.size());
+            if (curMatches == (int)block.size())
             {
                 stopped = true;
-                correct_words.push_back(cur);
+                correct_words.push_back(word);
                 break;
             }
             if (curMatches > bestMatches)
             {
                 bestMatches = curMatches;
-                best = cur;
+                best = word;
             }
         }
         if (!stopped)
         {
-            correct_words.push_back(cur);
+            correct_words.push_back(best);
         }
     }
     return correct_words;
@@ -151,6 +194,8 @@ vector<int> Graph::findShortestBFS(int start)
     dist[start] = 0;
     queue<int> q;
     q.push(start);
+    vector<int> path;
+
     while (!q.empty())
     {
         int v = q.front();
@@ -162,10 +207,9 @@ vector<int> Graph::findShortestBFS(int start)
                 dist[u] = dist[v] + 1;
                 pred[u] = v;
                 q.push(u);
-                if ((int)m_words[u].size() == 1 && !isalpha(m_words[u][0]) && !isdigit(m_words[u][0]) && dist[u] >= 2)
+                if (m_words[u] == "." && dist[u] >= 2)
                 {
-                    vector<int> path;
-                    int curv = v;
+                    int curv = u;
                     while (curv != -1)
                     {
                         path.push_back(curv);
@@ -177,12 +221,14 @@ vector<int> Graph::findShortestBFS(int start)
             }
         }
     }
+
+    return path;
 }
 
 int Graph::getStart(const vector<string> &correct)
 {
     vector<int> endv(0);
-    for (int i = 0; i < (int)m_graph.size(); i++)
+    for (int i = 0; i < m_graph.size(); i++)
     {
         if (m_words[i] == correct.back())
         {
@@ -197,12 +243,13 @@ int Graph::getStart(const vector<string> &correct)
     }
 
     auto last = correct.size() - 1;
-    vector<int> starts_end;
+    vector<int> starts_end(0);
     while (q.size())
     {
         auto cur = q.front();
         q.pop();
-        if (m_words[cur.first] != correct[last])
+
+        if (last > 0 && m_words[cur.first] != correct[last])
         {
             --last;
         }
@@ -223,7 +270,7 @@ int Graph::getStart(const vector<string> &correct)
         }
     }
 
-    return starts_end[Generator::getInstance().getSizeT(0, starts_end.size())];
+    return starts_end[Generator::getInstance().getSizeT(0, starts_end.size() - 1)];
 }
 
 void Graph::loadFromFile(filesystem::path &filename)
@@ -253,8 +300,8 @@ void Graph::loadFromFile(filesystem::path &filename)
 
 string Graph::answerTo(string &sentence)
 {
-    vector<string> good_sentence(correct(sentence));
+    vector<string> good_sentence = toCorrectWords(sentence);
     int start = getStart(good_sentence);
-    vector<int> path = findShortestBFS(start);
+    auto path = findShortestBFS(start);
     return pathToSentence(path);
 }

@@ -10,7 +10,7 @@ class Graph
 private:
     vector<vector<pair<int, float>>> m_graph;
     vector<vector<pair<int, float>>> m_revgraph;
-    vector<string> correct(const string &s);
+    vector<string> toCorrectWords(const string &s);
     vector<string> m_words;
     vector<int> findShortestBFS(int start);
     int getStart(const vector<string> &correct);
