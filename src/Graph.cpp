@@ -71,6 +71,17 @@ bool isRussianAlphaOrDigit(const string &s, size_t idx)
     return false;
 }
 
+void Graph::cropPath(vector<int> & path) {
+    vector<int> cur;
+    for (int i = 0; i < (int)path.size(); i++) {
+        cur.push_back(path[i]);
+        if (m_words[path[i]] == "." && i != 0) {
+            break;
+        }
+    }
+    path = cur;
+}
+
 string Graph::pathToSentence(vector<int> &path) const
 {
     int last = 0;
@@ -210,7 +221,7 @@ vector<int> Graph::findShortestBFS(int start)
                 dist[u] = dist[v] + 1;
                 pred[u] = v;
                 q.push(u);
-                if (m_words[u] == "." && dist[u] >= 2)
+                if (m_words[u] == "." && dist[u] >= 3)
                 {
                     int curv = u;
                     while (curv != start)
@@ -295,7 +306,7 @@ vector<int> Graph::findKbestBFS(int start, int k)
                 dist[u] = dist[v] + 1;
                 pred[u] = v;
                 q.push(u);
-                if (m_words[u] == "." && dist[u] >= 2)
+                if (m_words[u] == "." && dist[u] >= 3)
                 {
                     left--;
                     if (left != 0)
@@ -335,7 +346,7 @@ vector<int> Graph::findKlenBFS(int start, int k)
                 dist[u] = dist[v] + 1;
                 pred[u] = v;
                 q.push(u);
-                if (m_words[u] == "." && dist[u] >= k + 1)
+                if (m_words[u] == "." && dist[u] >= k + 2)
                 {
                     int curv = u;
                     while (curv != start)
@@ -547,7 +558,7 @@ void Graph::answerTo(string &sentence, Statistic &stat)
         path = findKrandom(start, 1000000);
     else
         path = findKgreedy(start, Generator::getInstance().getInt(2, 30));
-
+    cropPath(path);
     int mark = 0;
     string smark = "";
     std::cout << "🤖 > " << pathToSentence(path) << std::endl;
