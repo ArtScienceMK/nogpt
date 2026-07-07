@@ -368,6 +368,7 @@ vector<int> Graph::findKlenBFS(int start, int k)
     }
     while (k >= 3)
     {
+        k--;
         for (int v = 0; v < (int)m_graph.size(); v++)
         {
             if (m_words[v] == "." && dist[v] >= k + 1)
