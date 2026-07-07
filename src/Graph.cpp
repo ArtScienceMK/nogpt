@@ -400,11 +400,14 @@ vector<int> Graph::findKgreedy(int start, int k)
 {
     vector<int> path;
     path.push_back(start);
-    while ((int)path.size() < k + 1) {
+    while ((int)path.size() < k + 1)
+    {
         float best_prob = 0;
         int best_u = -1;
-        for (auto [u, prob] : m_graph[path.back()]) {
-            if (prob > best_prob) {
+        for (auto [u, prob] : m_graph[path.back()])
+        {
+            if (prob > best_prob)
+            {
                 best_prob = prob;
                 best_u = u;
             }
@@ -490,9 +493,9 @@ void Graph::loadFromFile(filesystem::path &filename)
 
 void Graph::answerTo(string &sentence, Statistic &stat)
 {
-    int alg_size = 8;
+    int alg_size = 9;
     stat.result_alg.resize(alg_size);
-    stat.algsName = {"ShortestBFS", "ProbbestDijkstra", "KbestBFS", "KlenBFS", "Krandom1000", "Krandom10000", "Krandom100000", "Krandom1000000"};
+    stat.algsName = {"ShortestBFS", "ProbbestDijkstra", "KbestBFS", "KlenBFS", "Krandom1000", "Krandom10000", "Krandom100000", "Krandom1000000", "Kgreedy"};
 
     auto ToCorrectWords = toCorrectWords(sentence);
     vector<string> good_sentence = ToCorrectWords.first;
@@ -521,8 +524,10 @@ void Graph::answerTo(string &sentence, Statistic &stat)
         path = findKrandom(start, 10000);
     else if (alg == 6)
         path = findKrandom(start, 100000);
-    else
+    else if (alg == 7)
         path = findKrandom(start, 1000000);
+    else
+        path = findKgreedy(start, Generator::getInstance().getInt(2, 30));
 
     int mark = 0;
     string smark = "";
