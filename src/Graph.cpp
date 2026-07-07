@@ -210,7 +210,7 @@ vector<int> Graph::findShortestBFS(int start)
                 if (m_words[u] == "." && dist[u] >= 2)
                 {
                     int curv = u;
-                    while (curv != -1)
+                    while (curv != start)
                     {
                         path.push_back(curv);
                         curv = pred[curv];
