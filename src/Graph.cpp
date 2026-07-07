@@ -665,6 +665,9 @@ void Graph::answerTo(string &sentence, Statistic &stat)
 
     vector<int> path;
     int alg = Generator::getInstance().getInt(0, alg_size - 1);
+
+    cout << "🤖 (" << stat.algsName[alg] << ")" << " ";
+
     if (alg == 0)
         path = findShortestBFS(start);
     else if (alg == 1)
