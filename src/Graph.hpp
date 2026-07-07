@@ -27,6 +27,7 @@ private:
     double getPathScore(std::vector<int> &path) const;
     double getWeight(int from, int to) const;
 
+    void cropPath(std::vector<int>& path);
     std::string pathToSentence(std::vector<int> &path) const;
 
 public:

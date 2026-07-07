@@ -71,6 +71,17 @@ bool isRussianAlphaOrDigit(const string &s, size_t idx)
     return false;
 }
 
+void Graph::cropPath(vector<int> & path) {
+    vector<int> cur;
+    for (int i = 0; i < (int)path.size(); i++) {
+        cur.push_back(path[i]);
+        if (m_words[path[i]] == "." && i != 0) {
+            break;
+        }
+    }
+    path = cur;
+}
+
 string Graph::pathToSentence(vector<int> &path) const
 {
     int last = 0;
@@ -528,7 +539,7 @@ void Graph::answerTo(string &sentence, Statistic &stat)
         path = findKrandom(start, 1000000);
     else
         path = findKgreedy(start, Generator::getInstance().getInt(2, 30));
-
+    cropPath(path);
     int mark = 0;
     string smark = "";
     std::cout << "🤖 > " << pathToSentence(path) << std::endl;
