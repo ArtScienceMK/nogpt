@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NoGPT — ИИ без ИИ</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg1:#0f1020; --bg2:#1a1033; --panel:#161629;
+    --border:#2a2a44; --text:#e6e6f0; --muted:#8a8aa8;
+    --accent:#8b5cf6; --accent2:#22d3ee;
+    --ok:#22c55e; --warn:#eab308; --err:#ef4444;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:
+      radial-gradient(1200px 600px at 15% -10%, #2a1a55 0%, transparent 55%),
+      radial-gradient(900px 500px at 100% 100%, #0e3b4a 0%, transparent 50%),
+      linear-gradient(180deg,var(--bg1),var(--bg2));
+    color:var(--text);
+    font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    overflow:hidden;
+  }
+  .wrap{
+    max-width:1200px; margin:0 auto; padding:18px; height:100%;
+    display:flex; flex-direction:column; gap:12px;
+  }
+  .hdr{
+    display:flex; align-items:center; gap:14px;
+    padding:12px 16px; background:rgba(22,22,41,.72);
+    border:1px solid var(--border); border-radius:14px;
+    backdrop-filter: blur(8px);
+  }
+  .logo{
+    width:34px;height:34px;border-radius:10px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:grid;place-items:center;font-weight:700;color:#0b0b18;
+    box-shadow:0 6px 24px -6px rgba(139,92,246,.6);
+  }
+  .title{font-weight:600;letter-spacing:.2px}
+  .sub{font-size:12px;color:var(--muted);margin-top:2px}
+  .spacer{flex:1}
+  .badge{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:12px;color:var(--muted);
+    padding:6px 10px;border:1px solid var(--border);border-radius:999px;
+    background:rgba(255,255,255,.02);
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);
+       box-shadow:0 0 0 0 rgba(255,255,255,.3); transition:background .2s}
+  .dot.ok  {background:var(--ok);   box-shadow:0 0 0 4px rgba(34,197,94,.15)}
+  .dot.warn{background:var(--warn); box-shadow:0 0 0 4px rgba(234,179,8,.15)}
+  .dot.err {background:var(--err);  box-shadow:0 0 0 4px rgba(239,68,68,.15)}
+  .btn{
+    font:inherit; font-size:12px; color:var(--text);
+    padding:6px 12px; border-radius:10px; cursor:pointer;
+    background:rgba(255,255,255,.04); border:1px solid var(--border);
+    transition:all .15s;
+  }
+  .btn:hover{background:rgba(255,255,255,.08); border-color:#3b3b5c}
+  .card{
+    flex:1; min-height:0;
+    background:#0b0b18;
+    border:1px solid var(--border);
+    border-radius:14px; padding:10px;
+    box-shadow:0 20px 60px -20px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.02);
+    display:flex; flex-direction:column;
+  }
+  #term{flex:1; min-height:0}
+  .foot{
+    display:flex; gap:14px; align-items:center; justify-content:space-between;
+    font-size:11px; color:var(--muted); padding:0 4px;
+  }
+  .kbd{
+    display:inline-block; padding:1px 6px; border-radius:6px;
+    border:1px solid var(--border); background:rgba(255,255,255,.04);
+    font-family:'JetBrains Mono',ui-monospace,monospace; font-size:11px;
+  }
+  /* xterm внутри карточки */
+  .xterm .xterm-viewport{background-color:transparent !important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hdr">
+    <div class="logo">N_</div>
+    <div>
+      <div class="title">NoGPT</div>
+      <div class="sub">ИИ без ИИ на графах. Работает даже на картошке 🥔</div>
+    </div>
+    <div class="spacer"></div>
+    <span class="badge"><span id="dot" class="dot"></span><span id="stat">connecting…</span></span>
+    <button class="btn" id="kbmode" title="Переключить режим ввода: Desktop / Mobile">⌨ …</button>
+    <button class="btn" id="reset" title="перезапустить процесс">↻ restart</button>
+  </header>
+
+  <div class="card"><div id="term"></div></div>
+
+  <div class="foot">
+    <div>Каждая вкладка — <b>своя</b> независимая сессия.</div>
+    <div>
+      <span class="kbd">Ctrl</span>+<span class="kbd">C</span> — прервать ·
+      <span class="kbd">Ctrl</span>+<span class="kbd">D</span> — EOF ·
+      русская раскладка поддерживается
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-web-links@0.9.0/lib/xterm-addon-web-links.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-unicode11@0.6.0/lib/xterm-addon-unicode11.js"></script>
+<script>
+  const dot = document.getElementById('dot');
+  const stat = document.getElementById('stat');
+  const setStatus = (s, cls) => { stat.textContent = s; dot.className = 'dot ' + (cls||''); };
+
+  const term = new Terminal({
+    cursorBlink: true,
+    fontSize: 14,
+    fontFamily: "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+    lineHeight: 1.25,
+    letterSpacing: 0.2,
+    allowProposedApi: true,
+    scrollback: 5000,
+    macOptionIsMeta: true,
+    theme: {
+      background: '#0b0b18',
+      foreground: '#e6e6f0',
+      cursor: '#8b5cf6',
+      cursorAccent: '#0b0b18',
+      selectionBackground: 'rgba(139,92,246,0.35)',
+      black:'#1a1a2e', red:'#ff6b81', green:'#3ddc97', yellow:'#f2c94c',
+      blue:'#5aa9ff', magenta:'#c084fc', cyan:'#22d3ee', white:'#e6e6f0',
+      brightBlack:'#4a4a6a', brightRed:'#ff8fa3', brightGreen:'#7ff0b8',
+      brightYellow:'#ffe08a', brightBlue:'#8fc3ff', brightMagenta:'#d8b4fe',
+      brightCyan:'#7bebff', brightWhite:'#ffffff'
+    }
+  });
+  const fit = new FitAddon.FitAddon();
+  term.loadAddon(fit);
+  term.loadAddon(new WebLinksAddon.WebLinksAddon());
+  // Unicode 11 — правильная ширина эмодзи и CJK, иначе обрезаются
+  term.loadAddon(new Unicode11Addon.Unicode11Addon());
+  term.unicode.activeVersion = '11';
+  term.open(document.getElementById('term'));
+  fit.fit();
+  term.focus();
+
+  let ws;
+  function connect() {
+    setStatus('connecting…', 'warn');
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    ws = new WebSocket(`${proto}://${location.host}/ws`);
+
+    ws.onopen = () => {
+      setStatus('connected', 'ok');
+      const {rows, cols} = term;
+      ws.send(`__RESIZE__:${rows},${cols}`);
+    };
+    ws.onmessage = e => term.write(e.data);
+    ws.onclose = () => {
+      setStatus('disconnected', 'err');
+      term.write('\r\n\x1b[90m[disconnected — нажмите ↻ restart, чтобы начать заново]\x1b[0m\r\n');
+    };
+    ws.onerror = () => setStatus('error', 'err');
+  }
+
+  // ── Ввод ────────────────────────────────────────────────────────────
+  // Проблема разных платформ:
+  //   • На мобильных keydown с кириллицей может дублироваться:
+  //     onData и beforeinput оба стреляют → "рр".
+  //   • На десктопе (особенно Linux + ibus/fcitx) keydown с кириллицей
+  //     может НЕ доходить до xterm вовсе → буквы теряются.
+  //
+  // Решение — два режима, авто-детект + ручной оверрайд:
+  //
+  //   DESKTOP (по умолчанию на ПК):
+  //     onData шлёт всё. Если non-ASCII нажатие не пришло через onData
+  //     в течение 250 мс, но пришло через beforeinput — досылаем его.
+  //     Это ловит linux/ibus кейс, не задваивая обычные буквы.
+  //
+  //   MOBILE (по умолчанию на телефонах/планшетах):
+  //     onData шлёт только ASCII и управляющие. Non-ASCII идёт
+  //     исключительно через beforeinput/compositionend.
+  const supportsBeforeInput = typeof InputEvent !== 'undefined' &&
+    'inputType' in (new InputEvent('input'));
+
+  const isTouch = matchMedia('(pointer: coarse)').matches ||
+                  /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  let mode = localStorage.getItem('kbmode') || (isTouch ? 'mobile' : 'desktop');
+
+  function isAllAscii(s) {
+    for (let i = 0; i < s.length; i++) if (s.charCodeAt(i) > 0x7f) return false;
+    return true;
+  }
+
+  function wsSend(src, s) {
+    if (!s || !ws || ws.readyState !== 1) return;
+    if (window.__DEBUG__) console.log('[' + src + ']', '[' + mode + ']', JSON.stringify(s));
+    ws.send(s);
+  }
+
+  // Помним, что onData отправил недавно — для десктоп-фолбэка.
+  const recentOnData = []; // {s, ts}
+  const RECENT_MS = 250;
+  function noteOnData(s) {
+    const now = performance.now();
+    recentOnData.push({s, ts: now});
+    // чистим старьё
+    while (recentOnData.length && (now - recentOnData[0].ts) > RECENT_MS) {
+      recentOnData.shift();
+    }
+  }
+  function onDataSaw(s) {
+    const now = performance.now();
+    for (let i = recentOnData.length - 1; i >= 0; i--) {
+      const r = recentOnData[i];
+      if ((now - r.ts) > RECENT_MS) break;
+      if (r.s === s) return true;
+    }
+    return false;
+  }
+
+  term.onData(d => {
+    if (mode === 'mobile' && supportsBeforeInput && !isAllAscii(d)) {
+      // На мобилке non-ASCII идёт только через beforeinput.
+      if (window.__DEBUG__) console.log('[onData-skip-mobile-nonascii]', JSON.stringify(d));
+      return;
+    }
+    noteOnData(d);
+    wsSend('onData', d);
+  });
+
+  function attachIMEFallback() {
+    const ta = document.querySelector('.xterm-helper-textarea');
+    if (!ta) { setTimeout(attachIMEFallback, 200); return; }
+
+    let composing = false;
+    ta.addEventListener('compositionstart', () => { composing = true; });
+    ta.addEventListener('compositionend', e => {
+      composing = false;
+      const d = e.data;
+      if (!d || isAllAscii(d)) return;
+      if (mode === 'desktop' && onDataSaw(d)) {
+        if (window.__DEBUG__) console.log('[compositionend-dup]', JSON.stringify(d));
+        return;
+      }
+      wsSend('compositionend', d);
+    });
+    ta.addEventListener('beforeinput', e => {
+      if (composing) return;
+      if (!['insertText','insertFromPaste','insertFromDrop','insertReplacementText'].includes(e.inputType)) return;
+      const d = e.data;
+      if (!d) return;
+      // ASCII шлёт onData всегда (и на desktop, и на mobile) — не дублируем.
+      if (isAllAscii(d)) return;
+      // На desktop фильтруем то, что уже прошло через onData за последние 250 мс.
+      if (mode === 'desktop' && onDataSaw(d)) {
+        if (window.__DEBUG__) console.log('[beforeinput-dup]', JSON.stringify(d));
+        return;
+      }
+      wsSend('beforeinput', d);
+    });
+
+    if (window.__DEBUG__) console.log('[webterm] input router:', mode,
+                                      'beforeinput=' + supportsBeforeInput);
+  }
+  if (supportsBeforeInput) attachIMEFallback();
+
+  // ── Кнопка переключения режима ─────────────────────────────────────
+  const kbBtn = document.getElementById('kbmode');
+  function refreshKbBtn() {
+    kbBtn.textContent = '⌨ ' + (mode === 'mobile' ? 'Mobile' : 'Desktop');
+    kbBtn.title = 'Режим ввода: ' + mode +
+      '. Клик — переключить.\nЕсли не набираются русские — переключи в Desktop.\n' +
+      'Если русские двоятся — переключи в Mobile.';
+  }
+  kbBtn.onclick = () => {
+    mode = (mode === 'mobile') ? 'desktop' : 'mobile';
+    localStorage.setItem('kbmode', mode);
+    refreshKbBtn();
+    if (window.__DEBUG__) console.log('[mode]', mode);
+  };
+  refreshKbBtn();
+
+  window.addEventListener('resize', () => {
+    fit.fit();
+    if (ws && ws.readyState === 1) ws.send(`__RESIZE__:${term.rows},${term.cols}`);
+  });
+
+  document.getElementById('reset').onclick = () => {
+    if (ws) try { ws.close(); } catch(_) {}
+    term.reset();
+    connect();
+  };
+
+  window.__DEBUG__ = new URLSearchParams(location.search).has('debug');
+  if (window.__DEBUG__) console.log('[webterm] debug on');
+
+
+
+  connect();
+</script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a17f848b2913f129',t:'MTc4MzUxODIwNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
