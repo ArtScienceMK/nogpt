@@ -635,7 +635,7 @@ vector<int> Graph::findKrandom(int start, int k)
         res[i] = cur;
         if ((int)cur.size() < 2) throw "too small size";
     }
-    double best_score = 0;
+    double best_score = -2e9;
     vector<int> path;
     for (int i = 0; i < k; i++)
     {
@@ -647,6 +647,7 @@ vector<int> Graph::findKrandom(int start, int k)
         }
     }
     path.erase(path.begin());
+    cout << "has path with len: " << (int)path.size() << "\n"; 
     return path;
 }
 
