@@ -500,10 +500,10 @@ vector<int> Graph::findProbbestDijkstra(int start)
             }
         }
     }
-    float mxIdx = start;
+    int mxIdx = -1;
     for (int v = 0; v < (int)m_graph.size(); v++)
     {
-        if (dist[v] != 2e9 && dist[v] > dist[mxIdx])
+        if (mxIdx == -1 || dist[v] > dist[mxIdx])
         {
             mxIdx = v;
         }
@@ -625,7 +625,7 @@ vector<int> Graph::findKrandom(int start, int k)
     vector<vector<int>> res(k);
     for (int i = 0; i < k; i++)
     {
-        vector<int> cur(Generator::getInstance().getInt(3, 30));
+        vector<int> cur(Generator::getInstance().getInt(5, 10));
         cur[0] = start;
         for (int j = 1; j < (int)cur.size(); j++)
         {
