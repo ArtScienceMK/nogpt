@@ -878,7 +878,7 @@ void Graph::loadFromFile(std::filesystem::path &filename)
     file.close();
 }
 
-void Graph::answerTo(string &sentence, Statistic &stat, int alg)
+void Graph::answerTo(string &sentence, Statistic &stat, int algf)
 {
     int alg_size = 10;
     stat.result_alg.resize(alg_size);
@@ -897,7 +897,8 @@ void Graph::answerTo(string &sentence, Statistic &stat, int alg)
     int start = getStart(good_sentence);
 
     vector<int> path;
-    if (alg == -2 || alg == -1)
+    int alg = algf;
+    if (algf == -2 || algf == -1)
         alg = Generator::getInstance().getInt(0, alg_size - 1);
 
     if (alg == -1)

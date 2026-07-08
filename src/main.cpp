@@ -75,7 +75,7 @@ int main()
             -1      - дебаг рандом
             0-...   - номер алгоритма
         */
-        g.answerTo(player, stat);
+        g.answerTo(player, stat, -1);
     }
 
     std::ofstream file(getAbsoluteFromExe("./stat"));
