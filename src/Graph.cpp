@@ -914,8 +914,8 @@ string Graph::answerTo(string &sentence, Statistic &stat, int algf)
     string smark = "";
     string answer = pathToSentence(path);
     std::cout << "🤖 > " << answer << std::endl;
-    cout << "⭐ (Оценка алгоритма х/10) > ";
-    getline(cin, smark);
+    // cout << "⭐ (Оценка алгоритма х/10) > ";
+    // getline(cin, smark);
     try
     {
         mark = stoi(smark);
