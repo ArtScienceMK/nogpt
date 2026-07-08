@@ -77,7 +77,7 @@ int main()
             -1      - дебаг рандом
             0-...   - номер алгоритма
         */
-        std::string sentence = lastp + lastr + player;
+        std::string sentence = lastp + " " + lastr + " " + player;
         lastp = player;
         lastr = g.answerTo(sentence, stat, -1);
     }
