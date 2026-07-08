@@ -687,9 +687,9 @@ void Graph::generatePokolenie(int count, set<pair<double, vector<int>>, greater<
     }
 }
 
-const int FIRST_POKOLENIE = 15;
+const int FIRST_POKOLENIE = 60;
 const int CHANCE_TO_MUTIR_CHILD = 15;
-const int COUNT_POKOLENIY = 55;
+const int COUNT_POKOLENIY = 200;
 
 std::vector<int> Graph::findGenetic(int len, int start)
 {
@@ -878,7 +878,7 @@ void Graph::loadFromFile(std::filesystem::path &filename)
     file.close();
 }
 
-void Graph::answerTo(string &sentence, Statistic &stat)
+void Graph::answerTo(string &sentence, Statistic &stat, int alg)
 {
     int alg_size = 10;
     stat.result_alg.resize(alg_size);
@@ -897,9 +897,11 @@ void Graph::answerTo(string &sentence, Statistic &stat)
     int start = getStart(good_sentence);
 
     vector<int> path;
-    int alg = Generator::getInstance().getInt(0, alg_size - 1);
+    if (alg == -2 || alg == -1)
+        alg = Generator::getInstance().getInt(0, alg_size - 1);
 
-    cout << "🤖 (" << stat.algsName[alg] << ")\n";
+    if (alg == -1)
+        cout << "🤖 (" << stat.algsName[alg] << ")\n";
 
     if (alg == 0)
         path = findShortestBFS(start);
