@@ -479,24 +479,25 @@ vector<int> Graph::findProbbestDijkstra(int start)
     vector<float> dist(m_graph.size(), 0);
     vector<int> pred(m_graph.size(), -1);
     dist[start] = 0;
-    priority_queue<pair<float, int>, vector<pair<float, int>>, greater<pair<float, int>>> q;
-    q.push({0, start});
+    set<pair<float, int>, greater<pair<float, int>>> q;
+    q.insert({0, start});
     vector<int> path;
-    int ops = 6e5;
+    int ops = 2e5;
     while (!q.empty())
     {
         ops--;
         if (ops == 0)
             break;
-        int v = q.top().second;
-        q.pop();
+        int v = (*q.begin()).second;
+        q.erase(q.begin());
         for (auto [u, prob] : m_graph[v])
         {
             if (dist[u] < dist[v] + prob)
             {
+                q.erase({dist[u], u});
                 dist[u] = dist[v] + prob;
                 pred[u] = v;
-                q.push({dist[u], u});
+                q.insert({dist[u], u});
             }
         }
     }
@@ -510,10 +511,10 @@ vector<int> Graph::findProbbestDijkstra(int start)
     }
     // cout << "MxIdx: " << mxIdx << "\n";
     int curv = mxIdx;
-    while (curv != start && (int)path.size() <= 15)
+    while (curv != start && (int)path.size() <= 7)
     {
         path.push_back(curv);
-        if (m_words[curv] == ".")
+        if ((int)path.size() > 2 && m_words[curv] == ".")
             break;
         curv = pred[curv];
     }
@@ -625,13 +626,14 @@ vector<int> Graph::findKrandom(int start, int k)
     vector<vector<int>> res(k);
     for (int i = 0; i < k; i++)
     {
-        vector<int> cur(Generator::getInstance().getInt(5, 10));
+        vector<int> cur(Generator::getInstance().getInt(3, 7));
         cur[0] = start;
         for (int j = 1; j < (int)cur.size(); j++)
         {
             cur[j] = Generator::getInstance().getInt(0, (int)m_graph.size() - 1);
         }
         res[i] = cur;
+        if ((int)cur.size() < 2) throw "too small size";
     }
     double best_score = 0;
     vector<int> path;
