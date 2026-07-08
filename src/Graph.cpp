@@ -911,7 +911,7 @@ string Graph::answerTo(string &sentence, Statistic &stat, int algf)
     else if (alg == 2)
         path = findKbestBFS(start, Generator::getInstance().getInt(1, 50));
     else if (alg == 3)
-        path = findKlenBFS(start, Generator::getInstance().getInt(2, 16));
+        path = findKlenBFS(start, Generator::getInstance().getInt(2, 15));
     else if (alg == 4)
         path = findKrandom(start, 1000);
     else if (alg == 5)
@@ -921,9 +921,9 @@ string Graph::answerTo(string &sentence, Statistic &stat, int algf)
     else if (alg == 7)
         path = findKrandom(start, 1000000);
     else if (alg == 8)
-        path = findKgreedy(start, Generator::getInstance().getInt(2, 16));
+        path = findKgreedy(start, Generator::getInstance().getInt(2, 15));
     else
-        path = findGenetic(Generator::getInstance().getInt(2, 16), start);
+        path = findGenetic(Generator::getInstance().getInt(2, 15), start);
 
     cropPath(path);
     int mark = 0;
