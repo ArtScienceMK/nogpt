@@ -878,7 +878,7 @@ void Graph::loadFromFile(std::filesystem::path &filename)
     file.close();
 }
 
-void Graph::answerTo(string &sentence, Statistic &stat, int algf)
+string Graph::answerTo(string &sentence, Statistic &stat, int algf)
 {
     int alg_size = 10;
     stat.result_alg.resize(alg_size);
@@ -928,7 +928,8 @@ void Graph::answerTo(string &sentence, Statistic &stat, int algf)
     cropPath(path);
     int mark = 0;
     string smark = "";
-    std::cout << "🤖 > " << pathToSentence(path) << std::endl;
+    string answer = pathToSentence(path);
+    std::cout << "🤖 > " << answer << std::endl;
     cout << "⭐ (Оценка алгоритма х/10) > ";
     getline(cin, smark);
     try
@@ -944,4 +945,5 @@ void Graph::answerTo(string &sentence, Statistic &stat, int algf)
     {
         std::cout << "Ошибка ввода: " << e.what() << std::endl;
     }
+    return answer;
 }
