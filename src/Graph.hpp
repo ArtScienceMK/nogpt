@@ -18,7 +18,6 @@ private:
     std::vector<std::vector<std::pair<int, float>>> m_graph;
     std::vector<std::vector<std::pair<int, float>>> m_revgraph;
     std::pair<std::vector<std::string>, std::vector<std::string>> toCorrectWords(const std::string &s);
-    std::vector<std::string> m_words;
     std::vector<int> findShortestBFS(int start);
     std::vector<int> findProbbestDijkstra(int start);
     std::vector<int> findKbestBFS(int start, int k);
@@ -39,4 +38,5 @@ public:
     Graph();
     void loadFromFile(std::filesystem::path &filename);
     std::string answerTo(std::string &sentence, Statistic &stat, int alg = -2);
+    std::vector<std::string> m_words;
 };
