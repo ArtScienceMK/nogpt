@@ -625,7 +625,7 @@ vector<int> Graph::findKrandom(int start, int k)
     vector<vector<int>> res(k);
     for (int i = 0; i < k; i++)
     {
-        vector<int> cur(Generator::getInstance().getInt(5, 15));
+        vector<int> cur(Generator::getInstance().getInt(5, 10));
         cur[0] = start;
         for (int j = 1; j < (int)cur.size(); j++)
         {
