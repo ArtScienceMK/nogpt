@@ -38,5 +38,5 @@ private:
 public:
     Graph();
     void loadFromFile(std::filesystem::path &filename);
-    void answerTo(std::string &sentence, Statistic &stat, int alg = -2);
+    std::string answerTo(std::string &sentence, Statistic &stat, int alg = -2);
 };

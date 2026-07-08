@@ -64,6 +64,8 @@ int main()
 
     Statistic stat;
 
+    std::string lastp = "";
+    std::string lastr = "";
     while (true)
     {
         std::cout << "\n💁 > ";
@@ -75,7 +77,9 @@ int main()
             -1      - дебаг рандом
             0-...   - номер алгоритма
         */
-        g.answerTo(player, stat, -1);
+        std::string sentence = lastp + lastr + player;
+        lastp = player;
+        lastr = g.answerTo(sentence, stat, -1);
     }
 
     std::ofstream file(getAbsoluteFromExe("./stat"));
@@ -134,9 +138,9 @@ int main()
         file << "       " << stat.result_alg[i].first << "            " << stat.result_alg[i].second << std::endl;
     }
     file << "\n======== NoGpt ========\n"
-              << std::endl;
+         << std::endl;
     file << "\n-----------------------\n"
-              << std::endl;
+         << std::endl;
     for (auto &it : stat.uncorrect_words)
     {
         file << it << ", ";

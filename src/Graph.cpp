@@ -35,7 +35,7 @@ double Graph::getPathScore(vector<int> &path) const
 
     double U = (double)summCount / (double)L;
 
-    return exp(-0.05 * abs(L - 15)) * P * exp(-0.5 * (U - 1));
+    return exp(-0.05 * abs(L - 7)) * P * exp(-0.5 * (U - 1));
 }
 
 double Graph::getWeight(int from, int to) const
@@ -880,7 +880,7 @@ void Graph::loadFromFile(std::filesystem::path &filename)
     file.close();
 }
 
-void Graph::answerTo(string &sentence, Statistic &stat, int algf)
+string Graph::answerTo(string &sentence, Statistic &stat, int algf)
 {
     int alg_size = 10;
     stat.result_alg.resize(alg_size);
@@ -913,7 +913,7 @@ void Graph::answerTo(string &sentence, Statistic &stat, int algf)
     else if (alg == 2)
         path = findKbestBFS(start, Generator::getInstance().getInt(1, 50));
     else if (alg == 3)
-        path = findKlenBFS(start, Generator::getInstance().getInt(2, 30));
+        path = findKlenBFS(start, Generator::getInstance().getInt(2, 16));
     else if (alg == 4)
         path = findKrandom(start, 1000);
     else if (alg == 5)
@@ -923,14 +923,15 @@ void Graph::answerTo(string &sentence, Statistic &stat, int algf)
     else if (alg == 7)
         path = findKrandom(start, 1000000);
     else if (alg == 8)
-        path = findKgreedy(start, Generator::getInstance().getInt(2, 30));
+        path = findKgreedy(start, Generator::getInstance().getInt(2, 16));
     else
-        path = findGenetic(Generator::getInstance().getInt(2, 30), start);
+        path = findGenetic(Generator::getInstance().getInt(2, 16), start);
 
     cropPath(path);
     int mark = 0;
     string smark = "";
-    std::cout << "🤖 > " << pathToSentence(path) << std::endl;
+    string answer = pathToSentence(path);
+    std::cout << "🤖 > " << answer << std::endl;
     cout << "⭐ (Оценка алгоритма х/10) > ";
     getline(cin, smark);
     try
@@ -946,4 +947,5 @@ void Graph::answerTo(string &sentence, Statistic &stat, int algf)
     {
         std::cout << "Ошибка ввода: " << e.what() << std::endl;
     }
+    return answer;
 }
