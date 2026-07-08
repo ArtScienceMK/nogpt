@@ -70,6 +70,11 @@ int main()
         std::getline(std::cin, player);
         if (player == "q")
             break;
+        /*  alg:
+            ничего  - пользователь
+            -1      - дебаг рандом
+            0-...   - номер алгоритма
+        */
         g.answerTo(player, stat);
     }
 
