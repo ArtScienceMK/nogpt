@@ -647,7 +647,7 @@ vector<int> Graph::findKrandom(int start, int k)
         }
     }
     path.erase(path.begin());
-    cout << "has path with len: " << (int)path.size() << "\n"; 
+    // cout << "has path with len: " << (int)path.size() << "\n"; 
     return path;
 }
 
