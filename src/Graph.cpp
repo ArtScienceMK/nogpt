@@ -719,35 +719,16 @@ std::vector<int> Graph::findGenetic(int len, int start)
             auto second_parent = (*it).second;
 
             // get childs
-            std::unordered_set<int> first_center;
-            std::unordered_set<int> second_center;
-
-            for (int i = path13; i < path23; i++)
-            {
-                first_center.insert(first_parent[i]);
-                second_center.insert(second_parent[i]);
-            }
-
-            std::vector<int> first_group(0);
-            std::vector<int> second_group(0);
-
-            for (int i = 0; i < size_path; i++)
-            {
-                if (!second_center.count(first_parent[i]))
-                    first_group.push_back(first_parent[i]);
-                if (!first_center.count(second_parent[i]))
-                    second_group.push_back(second_parent[i]);
-            }
 
             for (int i = 0; i < path13; i++)
             {
-                first_parent[i] = second_group[i];
-                second_parent[i] = first_group[i];
+                first_parent[i] = second_parent[i];
+                second_parent[i] = first_parent[i];
             }
             for (int i = path23; i < size_path; i++)
             {
-                first_parent[i] = second_group[i - path23 + path13];
-                second_parent[i] = first_group[i - path23 + path13];
+                first_parent[i] = second_parent[i];
+                second_parent[i] = first_parent[i];
             }
 
             vector<int> copy = {start};
