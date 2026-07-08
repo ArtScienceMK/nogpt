@@ -901,7 +901,7 @@ void Graph::answerTo(string &sentence, Statistic &stat, int algf)
     if (algf == -2 || algf == -1)
         alg = Generator::getInstance().getInt(0, alg_size - 1);
 
-    if (alg == -1)
+    if (algf == -1)
         cout << "🤖 (" << stat.algsName[alg] << ")\n";
 
     if (alg == 0)
