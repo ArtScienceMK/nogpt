@@ -894,7 +894,7 @@ string Graph::answerTo(string &sentence, Statistic &stat, int algf, bool markAlg
     else if (alg == 2)
         path = findKbestBFS(start, Generator::getInstance().getInt(1, 50));
     else if (alg == 3)
-        path = findKlenBFS(start, Generator::getInstance().getInt(2, 15));
+        path = findKlenBFS(start, Generator::getInstance().getInt(2, 7));
     else if (alg == 4)
         path = findKrandom(start, 1000);
     else if (alg == 5)
