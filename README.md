@@ -104,10 +104,10 @@
 3. Предыдущие пункты полностью соответствуют целям, поставленным при планировании проекта.
 
 <p align="center">
-  <img src="time_plot.png" alt="Time plot" width="200">
+  <img src="time_plot2.png" alt="Time plot" width="200">
 </p>
 <p align="center">
-  <img src="mem_plot.png" alt="Memory plot" width="200">
+  <img src="mem_plot2.png" alt="Memory plot" width="200">
 </p>
 
 ### Бонус
