@@ -208,7 +208,7 @@ void time_test_Genetic(int ops, int num_words) {
 }
 
 int main(int argc, const char * argv[]) {
-    for (int num_words = 1; num_words <= 1; num_words++) {
+    for (int num_words = 2; num_words <= 2; num_words++) {
         time_test_ShortestBFS(50, num_words);
         time_test_ProbbestDijkstra(10, num_words);
         time_test_KbestBFS(50, num_words);
