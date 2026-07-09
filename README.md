@@ -4,8 +4,6 @@
 
 ### NoGPT
 
-[![CI](https://github.com/MadsLorentzen/ai-job-search/actions/workflows/ci.yml/badge.svg)](https://github.com/MadsLorentzen/ai-job-search/actions/workflows/ci.yml)
-
 ИИ с минимальными системными требованиями, который продолжает предложение пользователя.
 
 ### Описание
