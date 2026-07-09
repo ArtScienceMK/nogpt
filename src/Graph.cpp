@@ -633,7 +633,8 @@ vector<int> Graph::findKrandom(int start, int k)
             cur[j] = Generator::getInstance().getInt(0, (int)m_graph.size() - 1);
         }
         res[i] = cur;
-        if ((int)cur.size() < 2) throw "too small size";
+        if ((int)cur.size() < 2)
+            throw "too small size";
     }
     double best_score = -2e9;
     vector<int> path;
@@ -647,7 +648,7 @@ vector<int> Graph::findKrandom(int start, int k)
         }
     }
     path.erase(path.begin());
-    // cout << "has path with len: " << (int)path.size() << "\n"; 
+    // cout << "has path with len: " << (int)path.size() << "\n";
     return path;
 }
 
@@ -862,12 +863,10 @@ void Graph::loadFromFile(std::filesystem::path &filename)
     file.close();
 }
 
-string Graph::answerTo(string &sentence, Statistic &stat, int algf)
+string Graph::answerTo(string &sentence, Statistic &stat, int algf, bool markAlgos)
 {
-    int alg_size = 10;
+    int alg_size = stat.algsName.size();
     stat.result_alg.resize(alg_size);
-    stat.algsName = {"ShortestBFS", "ProbbestDijkstra", "KbestBFS", "KlenBFS", "Krandom1000",
-                     "Krandom10000", "Krandom100000", "Krandom1000000", "Kgreedy", "Genetic"};
 
     auto ToCorrectWords = toCorrectWords(sentence);
     vector<string> good_sentence = ToCorrectWords.first;
@@ -914,20 +913,23 @@ string Graph::answerTo(string &sentence, Statistic &stat, int algf)
     string smark = "";
     string answer = pathToSentence(path);
     std::cout << "🤖 > " << answer << std::endl;
-    cout << "⭐ (Оценка алгоритма х/10) > ";
-    getline(cin, smark);
-    try
+    if (markAlgos)
     {
-        mark = stoi(smark);
-        if (mark >= 0 && mark <= 10)
+        cout << "⭐ (Оценка алгоритма х/10) > ";
+        getline(cin, smark);
+        try
         {
-            ++stat.result_alg[alg].first;
-            stat.result_alg[alg].second += mark;
+            mark = stoi(smark);
+            if (mark >= 0 && mark <= 10)
+            {
+                ++stat.result_alg[alg].first;
+                stat.result_alg[alg].second += mark;
+            }
         }
-    }
-    catch (const std::exception &e)
-    {
-        std::cout << "Ошибка ввода: " << e.what() << std::endl;
+        catch (const std::exception &e)
+        {
+            std::cout << "Ошибка ввода: " << e.what() << std::endl;
+        }
     }
     return answer;
 }
