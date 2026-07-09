@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>NoGPT — ИИ без ИИ</title>
+<link rel="icon" type="image/png" href="/static/logo.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,11 +36,16 @@
     backdrop-filter: blur(8px);
   }
   .logo{
-    width:34px;height:34px;border-radius:10px;
-    background:linear-gradient(135deg,var(--accent),var(--accent2));
-    display:grid;place-items:center;font-weight:700;color:#0b0b18;
-    box-shadow:0 6px 24px -6px rgba(139,92,246,.6);
+    width:44px;height:44px;border-radius:12px;
+    background:#f0f0f5;
+    display:grid;place-items:center;
+    padding:3px;
+    box-shadow:0 6px 24px -6px rgba(139,92,246,.55),
+               inset 0 0 0 1px rgba(255,255,255,.04);
+    overflow:hidden;
+    flex-shrink:0;
   }
+  .logo img{width:100%;height:100%;object-fit:contain;display:block}
   .title{font-weight:600;letter-spacing:.2px}
   .sub{font-size:12px;color:var(--muted);margin-top:2px}
   .spacer{flex:1}
@@ -86,7 +92,7 @@
 <body>
 <div class="wrap">
   <header class="hdr">
-    <div class="logo">N_</div>
+    <div class="logo"><img src="/static/logo.png" alt="NoGPT"></div>
     <div>
       <div class="title">NoGPT</div>
       <div class="sub">ИИ без ИИ на графах. Работает даже на картошке 🥔</div>
@@ -227,7 +233,6 @@
 
   function isControlPayload(d) {
     if (!d) return false;
-    // ESC-последовательности (стрелки, F-клавиши), одиночные control chars
     if (d.charCodeAt(0) === 0x1b) return true;
     if (d.length === 1) {
       const c = d.charCodeAt(0);
@@ -236,16 +241,33 @@
     return false;
   }
 
+  // Mobile-only: некоторые клавиатуры (Gboard/iOS) для одной буквы
+  // эмитят два input-события подряд → xterm.onData стреляет дважды.
+  // Глушим второе, если тот же payload пришёл за MOBILE_DEDUP_MS.
+  const MOBILE_DEDUP_MS = 40;
+  let lastOnData = {s: '', ts: 0};
+
+  // После Enter мобильные IME (Android autocomplete, iOS) могут
+  // "закрепить" набранный текст, повторно эмитя его как
+  // insertReplacementText/compositionend. Игнорируем input-события
+  // ENTER_SUPPRESS_MS после того, как через onData прошёл \r/\n.
+  const ENTER_SUPPRESS_MS = 250;
+  let suppressInputUntil = 0;
+
   term.onData(d => {
-    if (mode === 'mobile' && supportsBeforeInput && !isControlPayload(d)) {
-      // На мобилке любой печатаемый текст идёт только через beforeinput.
-      // Мобильные клавиатуры (Gboard/iOS) часто дублируют input-события
-      // для одной буквы → xterm.onData стреляет 2 раза. Гасим.
-      if (window.__DEBUG__) console.log('[onData-skip-mobile]', JSON.stringify(d));
-      return;
+    if (mode === 'mobile' && !isControlPayload(d)) {
+      const now = performance.now();
+      if (d === lastOnData.s && (now - lastOnData.ts) < MOBILE_DEDUP_MS) {
+        if (window.__DEBUG__) console.log('[onData-mobile-dup]', JSON.stringify(d));
+        return;
+      }
+      lastOnData = {s: d, ts: now};
+    }
+    // Enter/newline → включаем suppress-окно для input-fallback.
+    if (d === '\r' || d === '\n' || d === '\r\n') {
+      suppressInputUntil = performance.now() + ENTER_SUPPRESS_MS;
     }
     noteOnData(d);
-    // Гасим отложенные beforeinput с тем же текстом — они дубль.
     cancelPending(d);
     wsSend('onData', d);
   });
@@ -285,46 +307,43 @@
       composing = false;
       const d = e.data;
       if (!d || isAllAscii(d)) return;
-      if (mode === 'desktop') {
-        // Долгая композиция редко коллизирует с onData, но на всякий случай
-        // тоже проверим и на дубль в 250 мс.
-        if (onDataSaw(d)) {
-          if (window.__DEBUG__) console.log('[compositionend-dup]', JSON.stringify(d));
-          return;
-        }
-        schedulePending('compositionend', d);
-      } else {
-        wsSend('compositionend', d);
+      // Пост-Enter suppress: игнорим "закрепляющие" повторы после Enter.
+      if (performance.now() < suppressInputUntil) {
+        if (window.__DEBUG__) console.log('[compositionend-post-enter]', JSON.stringify(d));
+        return;
       }
+      if (onDataSaw(d)) {
+        if (window.__DEBUG__) console.log('[compositionend-dup]', JSON.stringify(d));
+        return;
+      }
+      schedulePending('compositionend', d);
     });
-    // Мобильный режим: дедуп подряд идущих одинаковых insertText в окне 40 мс.
-    // Некоторые IME (Gboard) стреляют beforeinput дважды на одну букву.
-    let lastBI = {s: '', ts: 0};
-
     ta.addEventListener('beforeinput', e => {
       if (composing) return;
       if (!['insertText','insertFromPaste','insertFromDrop','insertReplacementText'].includes(e.inputType)) return;
       const d = e.data;
       if (!d) return;
-
-      if (mode === 'desktop') {
-        // На десктопе ASCII шлёт onData — beforeinput тут только для non-ASCII fallback.
-        if (isAllAscii(d)) return;
-        if (onDataSaw(d)) {
-          if (window.__DEBUG__) console.log('[beforeinput-dup]', JSON.stringify(d));
-          return;
-        }
-        schedulePending('beforeinput', d);
-      } else {
-        // На мобилке шлём весь печатаемый текст (и ASCII, и non-ASCII).
-        const now = performance.now();
-        if (d === lastBI.s && (now - lastBI.ts) < 40) {
-          if (window.__DEBUG__) console.log('[beforeinput-mobile-dup]', JSON.stringify(d));
-          return;
-        }
-        lastBI = {s: d, ts: now};
-        wsSend('beforeinput', d);
+      // ASCII шлёт onData — не дублируем.
+      if (isAllAscii(d)) return;
+      // Пост-Enter suppress: гасим повторы, которые IME шлёт после отправки строки.
+      if (performance.now() < suppressInputUntil) {
+        if (window.__DEBUG__) console.log('[beforeinput-post-enter]', JSON.stringify(d));
+        return;
       }
+      // insertReplacementText — это autocorrect/автозамена, часто длиннее одной буквы
+      // и почти всегда является дублем уже введённого. На мобилке глушим целиком.
+      if (mode === 'mobile' && e.inputType === 'insertReplacementText') {
+        if (window.__DEBUG__) console.log('[replacementText-skip]', JSON.stringify(d));
+        return;
+      }
+      // Если onData уже успел с той же буквой — глушим.
+      if (onDataSaw(d)) {
+        if (window.__DEBUG__) console.log('[beforeinput-dup]', JSON.stringify(d));
+        return;
+      }
+      // Обе платформы: ждём FLUSH_MS. Если onData прилетит в это окно —
+      // cancelPending() уберёт отложенный beforeinput. Иначе отправим.
+      schedulePending('beforeinput', d);
     });
 
     if (window.__DEBUG__) console.log('[webterm] input router:', mode,
@@ -366,6 +385,5 @@
 
   connect();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a185eff9fbc2f3aa',t:'MTc4MzU4NTUxOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
-ASCII
