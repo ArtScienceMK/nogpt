@@ -103,6 +103,22 @@
 2. Модель обладает минимальными системными требованиями (60 Мб, среднее время ответа 0,06 с.).
 3. Предыдущие пункты полностью соответствуют целям, поставленным при планировании проекта.
 
+<p align="center">
+  <img src="time_plot.png" alt="Time plot" width="200">
+</p>
+<p align="center">
+  <img src="mem_plot.png" alt="Memory plot" width="200">
+</p>
+
+### Бонус
+Смешные скрины с начала проекта
+<p align="center">
+  <img src="funny_quote1.png" alt="Time plot" width="200">
+</p>
+<p align="center">
+  <img src="funny_quote2.png" alt="Memory plot" width="200">
+</p>
+
 ## License
 
 Apache 2.0
