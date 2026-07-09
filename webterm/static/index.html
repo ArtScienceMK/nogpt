@@ -232,8 +232,35 @@
       return;
     }
     noteOnData(d);
+    // Гасим отложенные beforeinput с тем же текстом — они дубль.
+    cancelPending(d);
     wsSend('onData', d);
   });
+
+  // Отложенные beforeinput-события (desktop): ждём FLUSH_MS, чтобы понять,
+  // придёт ли этот же символ через onData. Если да — cancelPending() глушит.
+  const FLUSH_MS = 60;
+  const pending = new Map(); // key -> {timer, s, src}
+  function cancelPending(s) {
+    // может быть несколько записей с одинаковым s (если человек быстро печатал)
+    for (const [key, info] of pending) {
+      if (info.s === s) {
+        clearTimeout(info.timer);
+        pending.delete(key);
+        if (window.__DEBUG__) console.log('[cancel-pending]', JSON.stringify(s));
+        return; // гасим только одну — по одной букве на onData
+      }
+    }
+  }
+  function schedulePending(src, s) {
+    const key = Symbol();
+    const timer = setTimeout(() => {
+      pending.delete(key);
+      // onData не пришёл — отправляем сами
+      wsSend(src, s);
+    }, FLUSH_MS);
+    pending.set(key, {timer, s, src});
+  }
 
   function attachIMEFallback() {
     const ta = document.querySelector('.xterm-helper-textarea');
@@ -245,25 +272,36 @@
       composing = false;
       const d = e.data;
       if (!d || isAllAscii(d)) return;
-      if (mode === 'desktop' && onDataSaw(d)) {
-        if (window.__DEBUG__) console.log('[compositionend-dup]', JSON.stringify(d));
-        return;
+      if (mode === 'desktop') {
+        // Долгая композиция редко коллизирует с onData, но на всякий случай
+        // тоже проверим и на дубль в 250 мс.
+        if (onDataSaw(d)) {
+          if (window.__DEBUG__) console.log('[compositionend-dup]', JSON.stringify(d));
+          return;
+        }
+        schedulePending('compositionend', d);
+      } else {
+        wsSend('compositionend', d);
       }
-      wsSend('compositionend', d);
     });
     ta.addEventListener('beforeinput', e => {
       if (composing) return;
       if (!['insertText','insertFromPaste','insertFromDrop','insertReplacementText'].includes(e.inputType)) return;
       const d = e.data;
       if (!d) return;
-      // ASCII шлёт onData всегда (и на desktop, и на mobile) — не дублируем.
+      // ASCII шлёт onData всегда — не дублируем.
       if (isAllAscii(d)) return;
-      // На desktop фильтруем то, что уже прошло через onData за последние 250 мс.
-      if (mode === 'desktop' && onDataSaw(d)) {
-        if (window.__DEBUG__) console.log('[beforeinput-dup]', JSON.stringify(d));
-        return;
+      if (mode === 'desktop') {
+        // Если onData уже успел (редко, но бывает) — глушим.
+        if (onDataSaw(d)) {
+          if (window.__DEBUG__) console.log('[beforeinput-dup]', JSON.stringify(d));
+          return;
+        }
+        // Иначе ждём FLUSH_MS: если onData придёт в это окно — cancelPending.
+        schedulePending('beforeinput', d);
+      } else {
+        wsSend('beforeinput', d);
       }
-      wsSend('beforeinput', d);
     });
 
     if (window.__DEBUG__) console.log('[webterm] input router:', mode,
@@ -305,5 +343,5 @@
 
   connect();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a17f848b2913f129',t:'MTc4MzUxODIwNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
