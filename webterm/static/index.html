@@ -225,10 +225,23 @@
     return false;
   }
 
+  function isControlPayload(d) {
+    if (!d) return false;
+    // ESC-последовательности (стрелки, F-клавиши), одиночные control chars
+    if (d.charCodeAt(0) === 0x1b) return true;
+    if (d.length === 1) {
+      const c = d.charCodeAt(0);
+      if (c < 0x20 || c === 0x7f) return true;
+    }
+    return false;
+  }
+
   term.onData(d => {
-    if (mode === 'mobile' && supportsBeforeInput && !isAllAscii(d)) {
-      // На мобилке non-ASCII идёт только через beforeinput.
-      if (window.__DEBUG__) console.log('[onData-skip-mobile-nonascii]', JSON.stringify(d));
+    if (mode === 'mobile' && supportsBeforeInput && !isControlPayload(d)) {
+      // На мобилке любой печатаемый текст идёт только через beforeinput.
+      // Мобильные клавиатуры (Gboard/iOS) часто дублируют input-события
+      // для одной буквы → xterm.onData стреляет 2 раза. Гасим.
+      if (window.__DEBUG__) console.log('[onData-skip-mobile]', JSON.stringify(d));
       return;
     }
     noteOnData(d);
@@ -284,22 +297,32 @@
         wsSend('compositionend', d);
       }
     });
+    // Мобильный режим: дедуп подряд идущих одинаковых insertText в окне 40 мс.
+    // Некоторые IME (Gboard) стреляют beforeinput дважды на одну букву.
+    let lastBI = {s: '', ts: 0};
+
     ta.addEventListener('beforeinput', e => {
       if (composing) return;
       if (!['insertText','insertFromPaste','insertFromDrop','insertReplacementText'].includes(e.inputType)) return;
       const d = e.data;
       if (!d) return;
-      // ASCII шлёт onData всегда — не дублируем.
-      if (isAllAscii(d)) return;
+
       if (mode === 'desktop') {
-        // Если onData уже успел (редко, но бывает) — глушим.
+        // На десктопе ASCII шлёт onData — beforeinput тут только для non-ASCII fallback.
+        if (isAllAscii(d)) return;
         if (onDataSaw(d)) {
           if (window.__DEBUG__) console.log('[beforeinput-dup]', JSON.stringify(d));
           return;
         }
-        // Иначе ждём FLUSH_MS: если onData придёт в это окно — cancelPending.
         schedulePending('beforeinput', d);
       } else {
+        // На мобилке шлём весь печатаемый текст (и ASCII, и non-ASCII).
+        const now = performance.now();
+        if (d === lastBI.s && (now - lastBI.ts) < 40) {
+          if (window.__DEBUG__) console.log('[beforeinput-mobile-dup]', JSON.stringify(d));
+          return;
+        }
+        lastBI = {s: d, ts: now};
         wsSend('beforeinput', d);
       }
     });
@@ -343,5 +366,6 @@
 
   connect();
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a185eff9fbc2f3aa',t:'MTc4MzU4NTUxOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+ASCII
