@@ -101,7 +101,7 @@ int main()
         */
         std::string sentence = lastp + " " + lastr + " " + player;
         lastp = player;
-        lastr = g.answerTo(sentence, stat, (gameType == 2) ? 8 : ((gameType == 1) ? -2 : -1), markAlgos);
+        lastr = g.answerTo(sentence, stat, (gameType == 2) ? 2 : ((gameType == 1) ? -2 : -1), markAlgos);
     }
 
     if (markAlgos)
